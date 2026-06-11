@@ -1,0 +1,11 @@
+../FATFS/Target/user_diskio.c:46:13:SPI_SetSpeed	2
+../FATFS/Target/user_diskio.c:54:16:SPI_TxRx	4
+../FATFS/Target/user_diskio.c:66:16:SD_WaitReady	3
+../FATFS/Target/user_diskio.c:81:16:SD_SendCmd	8
+../FATFS/Target/user_diskio.c:115:16:SD_ReadBlock	5
+../FATFS/Target/user_diskio.c:143:16:SD_WriteBlock	5
+../FATFS/Target/user_diskio.c:200:9:USER_initialize	20
+../FATFS/Target/user_diskio.c:310:9:USER_status	2
+../FATFS/Target/user_diskio.c:328:9:USER_read	12
+../FATFS/Target/user_diskio.c:378:9:USER_write	12
+../FATFS/Target/user_diskio.c:431:9:USER_ioctl	11

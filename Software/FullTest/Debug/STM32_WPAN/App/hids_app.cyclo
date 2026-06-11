@@ -1,0 +1,4 @@
+../STM32_WPAN/App/hids_app.c:116:6:HIDS_Notification	3
+../STM32_WPAN/App/hids_app.c:247:6:HIDSAPP_Init	1
+../STM32_WPAN/App/hids_app.c:265:6:HIDSAPP_Profile_UpdateChar	2
+../STM32_WPAN/App/hids_app.c:277:6:HIDSAPP_SendMouseReport	1

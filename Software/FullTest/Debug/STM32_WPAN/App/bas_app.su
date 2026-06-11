@@ -1,0 +1,4 @@
+../STM32_WPAN/App/bas_app.c:65:6:BAS_Notification	16	static
+../STM32_WPAN/App/bas_app.c:101:6:BASAPP_Init	16	static
+../STM32_WPAN/App/bas_app.c:121:6:BASAPP_Level	16	static
+../STM32_WPAN/App/bas_app.c:138:13:BASAPP_UpdateLevel	8	static

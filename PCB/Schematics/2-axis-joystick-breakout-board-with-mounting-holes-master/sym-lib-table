@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 0)
+  (lib (name "joystick-eagle-import")(type "KiCad")(uri "${KIPRJMOD}/joystick-eagle-import.kicad_sym")(options "")(descr ""))
+)

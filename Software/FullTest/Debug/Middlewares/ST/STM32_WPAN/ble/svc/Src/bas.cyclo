@@ -1,0 +1,3 @@
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/bas.c:62:30:BAS_Event_Handler	9
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/bas.c:143:6:BAS_Init	3
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/bas.c:269:6:BAS_Update_Char	2

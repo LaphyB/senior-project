@@ -1,0 +1,5 @@
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/hids.c:88:13:HIDS_Handle_Control_Point_Write	1
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/hids.c:249:13:HIDS_Handle_Report	3
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/hids.c:328:30:HIDS_Event_Handler	14
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/hids.c:620:6:HIDS_Init	6
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/hids.c:1123:12:HIDS_Update_Char	5

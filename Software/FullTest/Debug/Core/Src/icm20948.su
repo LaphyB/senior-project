@@ -1,0 +1,13 @@
+../Core/Src/icm20948.c:11:26:icm20948_write_reg	32	static
+../Core/Src/icm20948.c:16:26:icm20948_read_regs	40	static
+../Core/Src/icm20948.c:25:19:ICM20948_WhoAmI	16	static
+../Core/Src/icm20948.c:32:19:ICM20948_Init	24	static
+../Core/Src/icm20948.c:62:19:ICM20948_ReadAccel	32	static
+../Core/Src/icm20948.c:80:19:ICM20948_ReadGyro	32	static
+../Core/Src/icm20948.c:98:19:ICM20948_ReadAll	32	static
+../Core/Src/icm20948.c:125:26:ICM20948_EnableBypassMode	24	static
+../Core/Src/icm20948.c:167:19:ICM20948_InitMagnetometer	40	static
+../Core/Src/icm20948.c:230:19:ICM20948_ReadMagnetometerRaw	56	static
+../Core/Src/icm20948.c:271:19:ICM20948_ReadMagnetometer	24	static
+../Core/Src/icm20948.c:289:6:ICM20948_ConvertMagToMicrotesla	16	static
+../Core/Src/icm20948.c:391:6:Debug_Magnetometer	40	static

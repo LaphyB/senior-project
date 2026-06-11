@@ -1,0 +1,9 @@
+../../../../../../../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_exti.h:391:22:LL_EXTI_EnableIT_32_63	1
+../../../../../../../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_bus.h:539:22:LL_AHB2_GRP1_EnableClock	1
+../../../../../../../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_bus.h:1636:22:LL_C2_AHB2_GRP1_EnableClock	1
+C:/Users/barbe/STM32Cube/Repository/STM32Cube_FW_WB_V1.21.0/Projects/NUCLEO-WB15CC/Applications/BLE/BLE_p2pServer/Core/Src/app_debug.c:182:6:APPD_Init	1
+C:/Users/barbe/STM32Cube/Repository/STM32Cube_FW_WB_V1.21.0/Projects/NUCLEO-WB15CC/Applications/BLE/BLE_p2pServer/Core/Src/app_debug.c:228:6:APPD_EnableCPU2	1
+C:/Users/barbe/STM32Cube/Repository/STM32Cube_FW_WB_V1.21.0/Projects/NUCLEO-WB15CC/Applications/BLE/BLE_p2pServer/Core/Src/app_debug.c:257:13:APPD_SetCPU2GpioConfig	10
+C:/Users/barbe/STM32Cube/Repository/STM32Cube_FW_WB_V1.21.0/Projects/NUCLEO-WB15CC/Applications/BLE/BLE_p2pServer/Core/Src/app_debug.c:329:13:APPD_BleDtbCfg	1
+C:/Users/barbe/STM32Cube/Repository/STM32Cube_FW_WB_V1.21.0/Projects/NUCLEO-WB15CC/Applications/BLE/BLE_p2pServer/Core/Src/app_debug.c:393:6:DbgOutputInit	1
+C:/Users/barbe/STM32Cube/Repository/STM32Cube_FW_WB_V1.21.0/Projects/NUCLEO-WB15CC/Applications/BLE/BLE_p2pServer/Core/Src/app_debug.c:415:6:DbgOutputTraces	1

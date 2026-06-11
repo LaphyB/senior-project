@@ -1,0 +1,3 @@
+../Core/Src/led.c:10:6:setLED	8	static
+../Core/Src/led.c:15:6:resetLED	8	static
+../Core/Src/led.c:20:6:toggleLED	8	static

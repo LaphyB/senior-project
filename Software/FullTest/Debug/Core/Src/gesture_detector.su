@@ -1,0 +1,13 @@
+../Core/Src/gesture_detector.c:46:14:CalculateMagnitude	24	static
+../Core/Src/gesture_detector.c:51:22:DetermineGestureFromPeak	24	static
+../Core/Src/gesture_detector.c:67:13:LogGestureEvent	16	static
+../Core/Src/gesture_detector.c:92:13:LogContinuousEvent	40	static
+../Core/Src/gesture_detector.c:117:6:GestureDetector_Init	4	static
+../Core/Src/gesture_detector.c:135:15:GestureDetector_Update	48	static
+../Core/Src/gesture_detector.c:288:16:GestureDetector_GetState	4	static
+../Core/Src/gesture_detector.c:289:7:GestureDetector_GetPeakX	4	static
+../Core/Src/gesture_detector.c:290:7:GestureDetector_GetPeakY	4	static
+../Core/Src/gesture_detector.c:291:7:GestureDetector_GetPeakZ	4	static
+../Core/Src/gesture_detector.c:292:7:GestureDetector_GetPeakMagnitude	4	static
+../Core/Src/gesture_detector.c:294:13:GestureDetector_Gesturetostring	16	static
+../Core/Src/gesture_detector.c:309:13:GestureDetector_StateToString	16	static

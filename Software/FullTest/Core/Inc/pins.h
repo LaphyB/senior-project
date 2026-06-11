@@ -1,0 +1,60 @@
+/*
+ * pins.h
+ *
+ *  Created on: Mar 17, 2026
+ *      Author: barbe
+ */
+
+#ifndef SRC_PINS_H_
+#define SRC_PINS_H_
+
+// LEDs
+
+#define LED_PORT GPIOB
+#define LED_PIN GPIO_PIN_5
+
+// Buttons
+
+#define BUTTON1_PORT GPIOB
+#define BUTTON1_PIN GPIO_PIN_0
+
+#define BUTTON2_PORT GPIOA
+#define BUTTON2_PIN GPIO_PIN_12
+
+#define BUTTON3_PORT GPIOB
+#define BUTTON3_PIN GPIO_PIN_1
+
+#define BUTTON4_PORT GPIOA
+#define BUTTON4_PIN GPIO_PIN_11
+
+#define BUTTON5_PORT GPIOA
+#define BUTTON5_PIN GPIO_PIN_8
+
+#define BUTTON6_PORT GPIOE
+#define BUTTON6_PIN GPIO_PIN_4
+
+// Motors
+
+#define LEFT_MOTOR_PORT GPIOB
+#define LEFT_MOTOR_PIN GPIO_PIN_9
+
+#define RIGHT_MOTOR_PORT GPIOB
+#define RIGHT_MOTOR_PIN GPIO_PIN_8
+
+// Joysticks
+
+#define JOYSTICK_BUTTON1_PORT GPIOA
+#define JOYSTICK_BUTTON1_PIN GPIO_PIN_6
+
+#define JOYSTICK_BUTTON2_PORT GPIOA
+#define JOYSTICK_BUTTON2_PIN GPIO_PIN_4
+
+// Gyro
+
+
+// microSD
+
+#define SPI_CS_PORT GPIOB
+#define SPI_CS_PIN GPIO_PIN_2
+
+#endif /* SRC_PINS_H_ */

@@ -1,0 +1,911 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "081a2e5f-09a0-49fc-8e73-2f6317053734")
+	(paper "A4")
+	(lib_symbols
+		(symbol "TopPCB-eagle-import:JOYSTICKPTH"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -7.62 13.462 0)
+				(effects
+					(font
+						(size 1.778 1.5113)
+					)
+					(justify left bottom)
+					(hide yes)
+				)
+			)
+			(property "Value" ""
+				(at -7.62 -17.78 0)
+				(effects
+					(font
+						(size 1.778 1.5113)
+					)
+					(justify left bottom)
+					(hide yes)
+				)
+			)
+			(property "Footprint" "TopPCB:JOYSTICK"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Thumb Joystick Joystick commonly found in PS2 controllers. Two pots and a select switch. Adapted from Sparkfun Library (but for more common 6mm switch sticks)"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "JOYSTICKPTH_1_0"
+				(polyline
+					(pts
+						(xy -7.62 -15.24) (xy -7.62 12.7)
+					)
+					(stroke
+						(width 0.254)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -7.62 12.7) (xy 5.08 12.7)
+					)
+					(stroke
+						(width 0.254)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 5.08 -15.24) (xy -7.62 -15.24)
+					)
+					(stroke
+						(width 0.254)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 5.08 12.7) (xy 5.08 -15.24)
+					)
+					(stroke
+						(width 0.254)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(text "JOYSTICK"
+					(at 3.302 -7.366 900)
+					(effects
+						(font
+							(size 1.778 1.5113)
+						)
+						(justify left bottom)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 -10.16 0)
+					(length 2.54)
+					(name "SEL+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B1A"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 -12.7 0)
+					(length 2.54)
+					(name "SEL-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "B2A"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 0 0)
+					(length 2.54)
+					(name "H+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "H1"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 -2.54 0)
+					(length 2.54)
+					(name "H"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "H2"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 -5.08 0)
+					(length 2.54)
+					(name "H-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "H3"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 10.16 0)
+					(length 2.54)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "V1"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 7.62 0)
+					(length 2.54)
+					(name "V"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "V2"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -10.16 5.08 0)
+					(length 2.54)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "V3"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+				)
+			)
+		)
+	)
+	(junction
+		(at 163.83 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0c1cf320-81df-4637-9e26-ad263373a852")
+	)
+	(junction
+		(at 132.08 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "60b83627-d30a-48d3-a19e-83335847ee5a")
+	)
+	(junction
+		(at 153.67 104.14)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8de0042b-8248-4b90-be06-6f666a2b69da")
+	)
+	(junction
+		(at 139.7 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b6d1a8f7-92e0-4abe-811f-15276399d95b")
+	)
+	(junction
+		(at 121.92 104.14)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f0378d41-4989-4978-8965-bfa3e9317535")
+	)
+	(junction
+		(at 171.45 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f8d080c5-4301-418c-918a-de9b30aa3d6a")
+	)
+	(wire
+		(pts
+			(xy 124.46 101.6) (xy 119.38 101.6)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "0f2c8c18-176c-4fd9-9994-a87e5108c1c2")
+	)
+	(wire
+		(pts
+			(xy 116.84 104.14) (xy 121.92 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "102a8f30-9b77-4992-b229-c44086e4fad0")
+	)
+	(wire
+		(pts
+			(xy 116.84 96.52) (xy 116.84 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "10eda5bb-14a4-4cfc-abc0-2ac8ee711bee")
+	)
+	(wire
+		(pts
+			(xy 153.67 111.76) (xy 153.67 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "1124367f-68be-4697-97d2-00aed2d3c358")
+	)
+	(wire
+		(pts
+			(xy 129.54 106.68) (xy 129.54 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "1356a72e-dc5c-4394-be17-8786785f39e5")
+	)
+	(wire
+		(pts
+			(xy 132.08 99.06) (xy 139.7 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "228b892b-70bd-4096-9078-8fb4ad2c86e3")
+	)
+	(wire
+		(pts
+			(xy 121.92 111.76) (xy 121.92 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "288fe6a4-1301-481a-aa5f-afb55535397f")
+	)
+	(wire
+		(pts
+			(xy 163.83 111.76) (xy 171.45 111.76)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "29d9b995-9078-45ba-ac0c-24f140c3cfe2")
+	)
+	(wire
+		(pts
+			(xy 163.83 99.06) (xy 163.83 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "2cd7e050-871f-4559-b4a7-3557e1ebc76d")
+	)
+	(wire
+		(pts
+			(xy 121.92 104.14) (xy 127 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "2e084873-b26f-493c-ae63-0cd2656497b2")
+	)
+	(wire
+		(pts
+			(xy 139.7 111.76) (xy 139.7 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "342d173b-94ac-4934-bc37-3c0a682b69f5")
+	)
+	(wire
+		(pts
+			(xy 156.21 111.76) (xy 156.21 101.6)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "3c773026-5d02-432b-8c4a-cfc64a6b85cc")
+	)
+	(wire
+		(pts
+			(xy 148.59 104.14) (xy 153.67 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "474ad5f2-d972-47c8-bb90-a043e5db4acb")
+	)
+	(wire
+		(pts
+			(xy 127 111.76) (xy 127 106.68)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "5552364b-6494-499b-87c8-64fb3c95ccdc")
+	)
+	(wire
+		(pts
+			(xy 153.67 99.06) (xy 163.83 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "5bdb8879-f2af-4f29-a70a-5eb6a7941df2")
+	)
+	(wire
+		(pts
+			(xy 163.83 99.06) (xy 171.45 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "5f07a5bd-3a43-4dd8-8e32-540a6d7f33ba")
+	)
+	(wire
+		(pts
+			(xy 158.75 111.76) (xy 158.75 106.68)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "6343f428-cfca-4d61-be6e-5104a012252b")
+	)
+	(wire
+		(pts
+			(xy 168.91 109.22) (xy 161.29 109.22)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "64de2522-afb6-42e4-9d58-a04f36d79268")
+	)
+	(wire
+		(pts
+			(xy 156.21 101.6) (xy 151.13 101.6)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "671a9b2e-784c-48a7-b767-ed8724c9d572")
+	)
+	(wire
+		(pts
+			(xy 137.16 109.22) (xy 129.54 109.22)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "6834b370-b04c-4de9-9614-30aa0442bd1b")
+	)
+	(wire
+		(pts
+			(xy 171.45 99.06) (xy 171.45 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "68dbecd8-5ad4-4db8-9cf8-5f631706c7ec")
+	)
+	(wire
+		(pts
+			(xy 121.92 99.06) (xy 132.08 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "68f2a51b-d62d-4c4e-851f-c7b87a9999b2")
+	)
+	(wire
+		(pts
+			(xy 132.08 111.76) (xy 139.7 111.76)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "6e6f54c8-8b59-41d1-a57e-2069c53fd15e")
+	)
+	(wire
+		(pts
+			(xy 168.91 96.52) (xy 168.91 109.22)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "7444e36e-4ec2-42e2-a0f6-038497921055")
+	)
+	(wire
+		(pts
+			(xy 153.67 104.14) (xy 158.75 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "7a03ac71-3647-4b32-b140-427b9a02ee97")
+	)
+	(wire
+		(pts
+			(xy 137.16 96.52) (xy 137.16 109.22)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "7a2bf35a-5c48-4310-bb62-4a1e706e1272")
+	)
+	(wire
+		(pts
+			(xy 119.38 101.6) (xy 119.38 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "892dcdf6-92da-4c13-be10-aa41ad8481a4")
+	)
+	(wire
+		(pts
+			(xy 121.92 96.52) (xy 121.92 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "8aea0a3b-2ba8-4e7a-9ff8-3da922900b7b")
+	)
+	(wire
+		(pts
+			(xy 127 106.68) (xy 129.54 106.68)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "90ab6859-689b-461c-87fe-08f2561c076d")
+	)
+	(wire
+		(pts
+			(xy 129.54 109.22) (xy 129.54 111.76)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "972cd723-1fd3-4024-8281-c6d0dc4e2efc")
+	)
+	(wire
+		(pts
+			(xy 171.45 111.76) (xy 171.45 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "a195e43d-5b0e-4b3b-bb8c-7815014a921a")
+	)
+	(wire
+		(pts
+			(xy 161.29 106.68) (xy 161.29 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "a25e6d82-4e82-45ed-9009-1faefc18ca92")
+	)
+	(wire
+		(pts
+			(xy 158.75 104.14) (xy 158.75 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "a3ecee74-14c9-415f-a2df-851c3bcc8133")
+	)
+	(wire
+		(pts
+			(xy 153.67 96.52) (xy 153.67 99.06)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "a75357d6-213f-46c0-abc5-21c393c910ed")
+	)
+	(wire
+		(pts
+			(xy 139.7 99.06) (xy 139.7 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "aadd3051-b6f3-4d7e-855b-53b6d806a165")
+	)
+	(wire
+		(pts
+			(xy 151.13 101.6) (xy 151.13 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "ac8bb651-b98a-4656-86ab-19db6f947a91")
+	)
+	(wire
+		(pts
+			(xy 161.29 109.22) (xy 161.29 111.76)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "baba4bcc-a985-4bf8-8607-a0b3f43de837")
+	)
+	(wire
+		(pts
+			(xy 148.59 96.52) (xy 148.59 104.14)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "baeb9b25-dbf2-4e6f-a4de-3f62f8e04c85")
+	)
+	(wire
+		(pts
+			(xy 127 104.14) (xy 127 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "c1005228-e187-4550-ac20-92e117d1d4ab")
+	)
+	(wire
+		(pts
+			(xy 124.46 111.76) (xy 124.46 101.6)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "e6a1abac-900c-4857-9a7d-3090650eb9ed")
+	)
+	(wire
+		(pts
+			(xy 132.08 99.06) (xy 132.08 96.52)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "e7ad74e1-bfb4-4725-aa3a-1b83d881c1f2")
+	)
+	(wire
+		(pts
+			(xy 158.75 106.68) (xy 161.29 106.68)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "f79c4ceb-00f9-4929-a3f1-e4a5c37d504c")
+	)
+	(symbol
+		(lib_id "TopPCB-eagle-import:JOYSTICKPTH")
+		(at 158.75 86.36 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "52e50429-acfb-4d8f-976e-d520677ebd19")
+		(property "Reference" "U1"
+			(at 145.288 93.98 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Value" "JOYSTICKPTH"
+			(at 176.53 93.98 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TopPCB:JOYSTICK"
+			(at 158.75 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 158.75 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 158.75 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "V2"
+			(uuid "99630703-7cb2-456d-a362-e6254d176b3b")
+		)
+		(pin "B1A"
+			(uuid "00e4d718-25ec-41a4-95c3-2f5afa683ad2")
+		)
+		(pin "B2A"
+			(uuid "ab473eeb-000e-408f-abff-6dbe59a3d6dd")
+		)
+		(pin "H1"
+			(uuid "1c0a4684-e89c-43d5-ae85-f6ef14b98d25")
+		)
+		(pin "H2"
+			(uuid "40e58bcc-1d20-486d-9c24-93b310d35469")
+		)
+		(pin "H3"
+			(uuid "c567d8b1-a8b8-438f-9f7d-6e074822c806")
+		)
+		(pin "V1"
+			(uuid "8cf5d3ba-3025-4681-ab97-6bca677a6349")
+		)
+		(pin "V3"
+			(uuid "7ace57a7-96b1-4aee-9d49-c4635b4acc0e")
+		)
+		(instances
+			(project ""
+				(path "/081a2e5f-09a0-49fc-8e73-2f6317053734"
+					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "TopPCB-eagle-import:JOYSTICKPTH")
+		(at 127 86.36 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a2ed9e00-550e-46ca-9809-b9d7252d25df")
+		(property "Reference" "U2"
+			(at 113.538 93.98 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Value" "JOYSTICKPTH"
+			(at 144.78 93.98 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TopPCB:JOYSTICK"
+			(at 127 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 127 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 127 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "V2"
+			(uuid "291d85eb-1a7a-4451-b398-9d41c7d46c5a")
+		)
+		(pin "B1A"
+			(uuid "57002988-cee4-466c-bf16-5141117bd251")
+		)
+		(pin "B2A"
+			(uuid "02eb741c-62ac-479a-9c74-61cc2de92f11")
+		)
+		(pin "H1"
+			(uuid "bf0e1898-aa31-407a-9f8e-5f9e7fa4d483")
+		)
+		(pin "H2"
+			(uuid "9b7deccb-95c0-433b-9a8f-7e523e0b4d7e")
+		)
+		(pin "H3"
+			(uuid "d0eb0be6-d401-44a1-b742-c8ca849d8f0f")
+		)
+		(pin "V1"
+			(uuid "37367e15-2b52-4b96-b502-bfe073e34559")
+		)
+		(pin "V3"
+			(uuid "1de9d9b8-23b8-499d-9df5-c3a7af892c58")
+		)
+		(instances
+			(project "TopPCB"
+				(path "/081a2e5f-09a0-49fc-8e73-2f6317053734"
+					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
