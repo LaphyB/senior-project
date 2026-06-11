@@ -251,10 +251,14 @@ int main(void)
         sensor_data.gyro_y -= (int16_t)gyro_bias_y;
 
         // BUTTON5 - block HID
-        if (!sensor_data.buttons.BUTTON5)
-            blockHID = true;
-        else
-            blockHID = false;
+        // BUTTON5 - toggle HID block
+        static bool btn5_last = true;
+        bool btn5_now = sensor_data.buttons.BUTTON5;
+        if (btn5_last == false && btn5_now == true)
+        {
+            blockHID = !blockHID;
+        }
+        btn5_last = btn5_now;
 
         // BUTTON6 - haptic feedback
         if (!sensor_data.buttons.BUTTON6)
@@ -345,7 +349,6 @@ int main(void)
 			accum_x -= report_x;
 			accum_y -= report_y;
 
-			//if (report_x != 0 || report_y != 0)
 			HIDSAPP_SendMouseReport(report_x, report_y, 0);
 		}
 

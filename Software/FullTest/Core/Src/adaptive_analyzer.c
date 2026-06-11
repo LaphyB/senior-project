@@ -4,22 +4,19 @@
 
 void AdaptiveAnalyzer_Run(void)
 {
-	printf("\033[18;1H");
-	printf("\033[J");  // clear from cursor to end of screen
-    printf("\r\n<<-------------- ADAPTIVE ANALYZER ------------->>\r\n");
+	printf("\033[10;1H");
+	printf("\033[J");
 
     static GestureLogEntry_t entries[ANALYZER_LOOKBACK];
     uint32_t count = DataLogger_GetLastGestureEntries(entries, ANALYZER_LOOKBACK);
 
     if (count == 0)
     {
-        printf("Analyzer: no gesture data to analyze yet\r\n");
-        printf("--------------------------------------------------\r\n\r\n");
+        printf("Analyzer: no data yet\r\n");
         return;
     }
 
-    printf("Analyzer: examining last %lu entries\r\n", (unsigned long)count);
-
+    // ── Count events ─────────────────────────────────────────────
     uint32_t confirmed     = 0;
     uint32_t timeouts      = 0;
     uint32_t near_miss     = 0;
@@ -29,7 +26,7 @@ void AdaptiveAnalyzer_Run(void)
     float avg_peak_timeout       = 0.0f;
     float avg_duration_confirmed = 0.0f;
     float avg_duration_timeout   = 0.0f;
-    float avg_peak = 0.0f;
+    float avg_peak               = 0.0f;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -50,170 +47,211 @@ void AdaptiveAnalyzer_Run(void)
         }
     }
 
-    if (confirmed > 0) { avg_peak_confirmed     /= confirmed; avg_duration_confirmed /= confirmed; }
-    if (timeouts  > 0) { avg_peak_timeout       /= timeouts;  avg_duration_timeout   /= timeouts;  }
+    if (confirmed > 0) { avg_peak_confirmed /= confirmed; avg_duration_confirmed /= confirmed; }
+    if (timeouts  > 0) { avg_peak_timeout   /= timeouts;  avg_duration_timeout   /= timeouts;  }
 
-    printf("--- Summary ---\r\n");
-    printf("  Confirmed:     %lu\r\n", (unsigned long)confirmed);
-    printf("  Timeouts:      %lu\r\n", (unsigned long)timeouts);
-    printf("  Near misses:   %lu\r\n", (unsigned long)near_miss);
-    printf("  Too sensitive: %lu\r\n", (unsigned long)too_sensitive);
+    uint32_t total        = confirmed + timeouts;
+    float    timeout_rate = total > 0 ? (float)timeouts   / (float)total : 0.0f;
+    float    success_rate = total > 0 ? (float)confirmed  / (float)total : 0.0f;
 
-    if (confirmed > 0)
-        printf("  Avg confirmed peak: %.1f  duration: %.0f ms\r\n",
-               avg_peak_confirmed, avg_duration_confirmed);
-    if (timeouts > 0)
-        printf("  Avg timeout peak:   %.1f  duration: %.0f ms\r\n",
-               avg_peak_timeout, avg_duration_timeout);
-
-    printf("--- Current Config ---\r\n");
-    printf("  Threshold:  %.1f\r\n",   gesture_magnitude_threshold);
-    printf("  Window:     %lu ms\r\n", (unsigned long)gesture_detection_window_ms);
-    printf("  Peak frac:  %.2f\r\n",   gesture_peak_fraction);
-
-    printf("--- Suggestions ---\r\n");
-    uint8_t changed = 0;
-    uint32_t total = confirmed + timeouts;
+    // ── Print summary ─────────────────────────────────────────────
+    printf("[ ANALYZER ] last %lu entries\r\n", (unsigned long)count);
+    printf("OK:%lu  TO:%lu  NM:%lu  TS:%lu  Suc:%.0f%%\r\n",
+        (unsigned long)confirmed, (unsigned long)timeouts,
+        (unsigned long)near_miss, (unsigned long)too_sensitive,
+        success_rate * 100.0f);
+    printf("Thresh:%.0f  Win:%lums  Frac:%.2f\r\n",
+        gesture_magnitude_threshold,
+        (unsigned long)gesture_detection_window_ms,
+        gesture_peak_fraction);
+    printf("Cool:%lums  Deb:%lums  LPF:%.2f\r\n",
+        (unsigned long)gesture_cooldown_ms,
+        (unsigned long)gesture_debounce_ms,
+        gyro_lpf_alpha);
+    printf("--\r\n");
 
     if (total == 0)
     {
-        printf("  Not enough gesture attempts to analyze\r\n");
+        printf("Not enough attempts\r\n");
+        return;
+    }
+
+    uint8_t changed = 0;
+
+    // ── Detection window ─────────────────────────────────────────
+    if (timeout_rate > 0.1f)
+    {
+        float    scale      = expf(timeout_rate * 1.0986f);
+        uint32_t new_window = avg_duration_timeout > 0
+                            ? (uint32_t)(avg_duration_timeout * scale)
+                            : (uint32_t)(gesture_detection_window_ms * scale);
+
+        uint32_t smart_cap = avg_duration_timeout > 0
+                           ? (uint32_t)(avg_duration_timeout * 3.0f)
+                           : 1500;
+        if (smart_cap > 1500) smart_cap = 1500;
+        if (new_window > smart_cap) new_window = smart_cap;
+        if (new_window < gesture_detection_window_ms) new_window = gesture_detection_window_ms;
+
+        printf("Win:%lu->%lu ms\r\n",
+            (unsigned long)gesture_detection_window_ms,
+            (unsigned long)new_window);
+        gesture_detection_window_ms = new_window;
+        changed = 1;
+    }
+
+    // ── Threshold ────────────────────────────────────────────────
+    if (avg_peak_timeout > 0 && avg_peak_confirmed > 0)
+        avg_peak = (avg_peak_timeout + avg_peak_confirmed) / 2.0f;
+    else if (avg_peak_timeout > 0)
+        avg_peak = avg_peak_timeout;
+    else if (avg_peak_confirmed > 0)
+        avg_peak = avg_peak_confirmed;
+
+    if (avg_peak > 0)
+    {
+        float ideal = avg_peak * 0.65f;
+        if (ideal < DEFAULT_GESTURE_MAGNITUDE_THRESHOLD * 0.5f)
+            ideal = DEFAULT_GESTURE_MAGNITUDE_THRESHOLD * 0.5f;
+
+        if (gesture_magnitude_threshold < ideal * 0.7f ||
+            gesture_magnitude_threshold > ideal * 1.5f)
+        {
+            printf("Thresh:%.0f->%.0f\r\n", gesture_magnitude_threshold, ideal);
+            gesture_magnitude_threshold = ideal;
+            changed = 1;
+        }
+    }
+
+    // ── Peak fraction ────────────────────────────────────────────
+    if (gesture_peak_fraction > 0.3f)
+    {
+        printf("Frac:%.2f->0.20\r\n", gesture_peak_fraction);
+        gesture_peak_fraction = 0.2f;
+        changed = 1;
+    }
+
+    // ── Too sensitive ────────────────────────────────────────────
+    if (too_sensitive > confirmed * 0.5f && avg_peak > 0)
+    {
+        float new_thresh = gesture_magnitude_threshold * 1.25f;
+        printf("Thresh:%.0f->%.0f (false triggers)\r\n",
+            gesture_magnitude_threshold, new_thresh);
+        gesture_magnitude_threshold = new_thresh;
+        changed = 1;
+    }
+
+    // ── Tighten threshold if peaks well above ────────────────────
+    if (success_rate > 0.8f && confirmed > 5 &&
+        avg_peak_confirmed > gesture_magnitude_threshold * 3.0f)
+    {
+        float new_thresh = gesture_magnitude_threshold * 1.2f;
+        printf("Thresh:%.0f->%.0f (tighten)\r\n",
+            gesture_magnitude_threshold, new_thresh);
+        gesture_magnitude_threshold = new_thresh;
+        changed = 1;
+    }
+
+    // ── Cooldown adjustment ───────────────────────────────────────
+    if (too_sensitive > 2 && gesture_cooldown_ms < 1000)
+    {
+        uint32_t new_cooldown = gesture_cooldown_ms + 100;
+        if (new_cooldown > 1000) new_cooldown = 1000;
+        printf("Cool:%lu->%lu ms (too sensitive)\r\n",
+            (unsigned long)gesture_cooldown_ms,
+            (unsigned long)new_cooldown);
+        gesture_cooldown_ms = new_cooldown;
+        changed = 1;
+    }
+    else if (too_sensitive == 0 && success_rate > 0.8f && gesture_cooldown_ms > 300)
+    {
+        uint32_t new_cooldown = gesture_cooldown_ms - 50;
+        if (new_cooldown < 300) new_cooldown = 300;
+        printf("Cool:%lu->%lu ms (responsive)\r\n",
+            (unsigned long)gesture_cooldown_ms,
+            (unsigned long)new_cooldown);
+        gesture_cooldown_ms = new_cooldown;
+        changed = 1;
+    }
+
+    // ── Debounce adjustment ───────────────────────────────────────
+    if (too_sensitive > 2 && gesture_debounce_ms < 300)
+    {
+        uint32_t new_debounce = gesture_debounce_ms + 50;
+        if (new_debounce > 300) new_debounce = 300;
+        printf("Deb:%lu->%lu ms\r\n",
+            (unsigned long)gesture_debounce_ms,
+            (unsigned long)new_debounce);
+        gesture_debounce_ms = new_debounce;
+        changed = 1;
+    }
+    else if (too_sensitive == 0 && success_rate > 0.8f && gesture_debounce_ms > 50)
+    {
+        uint32_t new_debounce = gesture_debounce_ms - 25;
+        if (new_debounce < 50) new_debounce = 50;
+        printf("Deb:%lu->%lu ms\r\n",
+            (unsigned long)gesture_debounce_ms,
+            (unsigned long)new_debounce);
+        gesture_debounce_ms = new_debounce;
+        changed = 1;
+    }
+
+    // ── LPF alpha adjustment ─────────────────────────────────────
+    if (near_miss > confirmed && gyro_lpf_alpha > 0.05f)
+    {
+        float new_alpha = gyro_lpf_alpha - 0.01f;
+        if (new_alpha < 0.05f) new_alpha = 0.05f;
+        printf("LPF:%.2f->%.2f (smoother)\r\n", gyro_lpf_alpha, new_alpha);
+        gyro_lpf_alpha = new_alpha;
+        changed = 1;
+    }
+    else if (too_sensitive > confirmed && gyro_lpf_alpha < 0.3f)
+    {
+        float new_alpha = gyro_lpf_alpha + 0.01f;
+        if (new_alpha > 0.3f) new_alpha = 0.3f;
+        printf("LPF:%.2f->%.2f (less smooth)\r\n", gyro_lpf_alpha, new_alpha);
+        gyro_lpf_alpha = new_alpha;
+        changed = 1;
+    }
+
+    // ── Save and log ─────────────────────────────────────────────
+    if (changed)
+    {
+        printf("Config updated\r\n");
+        DataLogger_SaveConfig();
+
+        AnalyzerChangeEntry_t change_entry;
+        change_entry.timestamp_ms      = HAL_GetTick();
+        change_entry.old_threshold     = entries[0].config_snapshot.gesture_magnitude_threshold;
+        change_entry.new_threshold     = gesture_magnitude_threshold;
+        change_entry.old_window_ms     = entries[0].config_snapshot.gesture_detection_window_ms;
+        change_entry.new_window_ms     = gesture_detection_window_ms;
+        change_entry.old_peak_fraction = entries[0].config_snapshot.gesture_peak_fraction;
+        change_entry.new_peak_fraction = gesture_peak_fraction;
+        change_entry.avg_peak          = avg_peak_confirmed > 0 ? avg_peak_confirmed : avg_peak_timeout;
+        change_entry.timeout_rate      = timeout_rate;
+        DataLogger_LogAnalyzerChange(&change_entry);
     }
     else
     {
-        float timeout_rate = (float)timeouts / (float)total;
-        float success_rate = (float)confirmed / (float)total;
-
-        printf("  Success rate: %.0f%%  Timeout rate: %.0f%%\r\n",
-               success_rate * 100.0f, timeout_rate * 100.0f);
-
-        // ── Fix detection window ──────────────────────────────────
-        if (timeout_rate > 0.1f)
-        {
-            float scale = expf(timeout_rate * 1.0986f);
-            uint32_t new_window;
-
-            if (avg_duration_timeout > 0)
-                new_window = (uint32_t)(avg_duration_timeout * scale);
-            else
-                new_window = (uint32_t)(gesture_detection_window_ms * scale);
-
-            // Cap at 3x the average observed duration, never more than 1500ms
-            uint32_t smart_cap = (avg_duration_timeout > 0)
-                               ? (uint32_t)(avg_duration_timeout * 3.0f)
-                               : 1500;
-            if (smart_cap > 1500) smart_cap = 1500;
-            if (new_window > smart_cap) new_window = smart_cap;
-
-            // Don't reduce the window if it's already reasonable
-            if (new_window < gesture_detection_window_ms)
-                new_window = gesture_detection_window_ms;
-
-            printf("  [CHANGE] Window: %lu -> %lu ms (scale=%.2fx at %.0f%% timeout rate)\r\n",
-                   (unsigned long)gesture_detection_window_ms,
-                   (unsigned long)new_window,
-                   scale,
-                   timeout_rate * 100.0f);
-            gesture_detection_window_ms = new_window;
-            changed = 1;
-        }
-
-        // ── Fix threshold based on observed peaks ─────────────────
-        if (avg_peak_timeout > 0 && avg_peak_confirmed > 0)
-            avg_peak = (avg_peak_timeout + avg_peak_confirmed) / 2.0f;
-        else if (avg_peak_timeout > 0)
-            avg_peak = avg_peak_timeout;
-        else if (avg_peak_confirmed > 0)
-            avg_peak = avg_peak_confirmed;
-
-        if (avg_peak > 0)
-        {
-            // Threshold should be 45% of average peak for reliable detection
-            float ideal_threshold = avg_peak * 0.65f;
-
-            // Also enforce a minimum - threshold should never be below
-            // what we know works from the default config
-            if (ideal_threshold < DEFAULT_GESTURE_MAGNITUDE_THRESHOLD * 0.5f)
-                ideal_threshold = DEFAULT_GESTURE_MAGNITUDE_THRESHOLD * 0.5f;
-
-            if (gesture_magnitude_threshold < ideal_threshold * 0.7f ||
-                gesture_magnitude_threshold > ideal_threshold * 1.5f)
-            {
-                printf("  [CHANGE] Threshold: %.1f -> %.1f (65%% of avg peak %.1f)\r\n",
-                       gesture_magnitude_threshold, ideal_threshold, avg_peak);
-                gesture_magnitude_threshold = ideal_threshold;
-                changed = 1;
-            }
-        }
-
-        // ── Fix peak fraction if too high ─────────────────────────
-        if (gesture_peak_fraction > 0.3f)
-        {
-            printf("  [CHANGE] Peak fraction: %.2f -> 0.20 (too high, gestures won't complete)\r\n",
-                   gesture_peak_fraction);
-            gesture_peak_fraction = 0.2f;
-            changed = 1;
-        }
-
-        // ── Too sensitive - false triggers during idle ────────────
-        if (too_sensitive > confirmed * 0.5f && avg_peak > 0)
-        {
-            float new_threshold = gesture_magnitude_threshold * 1.25f;
-            printf("  [CHANGE] Threshold: %.1f -> %.1f (too many false triggers)\r\n",
-                   gesture_magnitude_threshold, new_threshold);
-            gesture_magnitude_threshold = new_threshold;
-            changed = 1;
-        }
-
-        // ── Good config - optionally tighten threshold ────────────
-        if (success_rate > 0.8f && confirmed > 5 &&
-            avg_peak_confirmed > gesture_magnitude_threshold * 3.0f)
-        {
-            float new_threshold = gesture_magnitude_threshold * 1.2f;
-            printf("  [CHANGE] Threshold: %.1f -> %.1f (peaks well above threshold, tighten up)\r\n",
-                   gesture_magnitude_threshold, new_threshold);
-            gesture_magnitude_threshold = new_threshold;
-            changed = 1;
-        }
+        printf("No changes needed\r\n");
     }
-
-    if (changed)
-        {
-            printf("  Config updated, changes will take effect immediately\r\n");
-            DataLogger_SaveConfig();
-
-            // Log the change
-            AnalyzerChangeEntry_t change_entry;
-            change_entry.timestamp_ms    = HAL_GetTick();
-            change_entry.old_threshold   = entries[0].config_snapshot.gesture_magnitude_threshold;
-            change_entry.new_threshold   = gesture_magnitude_threshold;
-            change_entry.old_window_ms   = entries[0].config_snapshot.gesture_detection_window_ms;
-            change_entry.new_window_ms   = gesture_detection_window_ms;
-            change_entry.old_peak_fraction = entries[0].config_snapshot.gesture_peak_fraction;
-            change_entry.new_peak_fraction = gesture_peak_fraction;
-            change_entry.avg_peak        = (avg_peak_confirmed > 0) ? avg_peak_confirmed : avg_peak_timeout;
-            change_entry.timeout_rate    = (total > 0) ? (float)timeouts / (float)total : 0.0f;
-            DataLogger_LogAnalyzerChange(&change_entry);
-        }
-        else
-            printf("  No changes needed!\r\n");
-
-    printf("--------------------------------------------------\r\n\r\n");
 }
 
 void AdaptiveAnalyzer_BreakConfig(void)
 {
-	printf("\033[18;1H");
-	printf("\033[J");  // clear from cursor to end of screen
-    printf("\r\n<<----------------Scrambling Config-------------->>\r\n");
+	printf("\033[10;1H");
+	printf("\033[J");
+    printf("[ BREAK CONFIG ]\r\n");
 
-    gesture_magnitude_threshold  = 500.0f;
-    gesture_detection_window_ms  = 200;   // too short, will timeout
-    gesture_peak_fraction        = 0.5f;  // too high, gesture won't complete
+    gesture_magnitude_threshold = 500.0f;
+    gesture_detection_window_ms = 200;
+    gesture_peak_fraction       = 0.5f;
+    gesture_cooldown_ms         = 100;
+    gesture_debounce_ms         = 10;
+    gyro_lpf_alpha              = 0.5f;
 
-    printf("  Threshold: %.1f -> 500.0 (too low, will false trigger)\r\n", gesture_magnitude_threshold);
-    printf("  Window: set to 200ms (too short)\r\n");
-    printf("  Peak fraction: set to 0.5 (too high)\r\n");
-    printf("  Run analyzer to fix!\r\n\r\n");
-    printf("--------------------------------------------------\r\n\r\n");
+    printf("Thresh:500  Win:200ms  Frac:0.5\r\n");
+    printf("Cool:100ms  Deb:10ms  LPF:0.5\r\n");
+    printf("Run analyzer to fix\r\n");
 }
