@@ -75,8 +75,8 @@ all: main-build
 main-build: FullTest.elf secondary-outputs
 
 # Tool invocations
-FullTest.elf FullTest.map: $(OBJS) $(USER_OBJS) C:\Users\barbe\Desktop\College\CST471\senior-project\Software\FullTest\STM32WB15CCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FullTest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\barbe\Desktop\College\CST471\senior-project\Software\FullTest\STM32WB15CCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FullTest.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+FullTest.elf FullTest.map: $(OBJS) $(USER_OBJS) C:\Users\barbe\Desktop\College\SeniorProject\senior-project\Software\FullTest\STM32WB15CCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "FullTest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\barbe\Desktop\College\SeniorProject\senior-project\Software\FullTest\STM32WB15CCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FullTest.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

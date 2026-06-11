@@ -69,14 +69,14 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
  ../Core/Inc/icm20948.h ../Core/Inc/main.h \
- ../Utilities/sequencer/stm32_seq.h ../Core/Inc/config.h \
- ../Core/Inc/pins.h ../Core/Inc/gyro_filters.h ../Core/Inc/config.h \
- ../Core/Inc/buttons.h ../Core/Inc/pins.h ../Core/Inc/led.h \
- ../Core/Inc/motor.h ../Core/Inc/gesture_detector.h \
+ ../Utilities/sequencer/stm32_seq.h ../STM32_WPAN/App/hids_app.h \
+ ../Core/Inc/config.h ../Core/Inc/pins.h ../Core/Inc/buttons.h \
+ ../Core/Inc/pins.h ../Core/Inc/led.h ../Core/Inc/motor.h \
+ ../Core/Inc/gesture_detector.h ../Core/Inc/config.h \
  ../Core/Inc/sensor_data.h ../Core/Inc/buttons.h \
- ../Core/Inc/gyro_to_mouse.h ../Core/Inc/adaptive_analyzer.h \
- ../Core/Inc/data_logger.h ../Core/Inc/gesture_detector.h \
- ../Core/Inc/sensor_data.h ../STM32_WPAN/App/hids_app.h
+ ../Core/Inc/adaptive_analyzer.h ../Core/Inc/data_logger.h \
+ ../Core/Inc/gesture_detector.h ../Core/Inc/gyro_to_mouse.h \
+ ../Core/Inc/sensor_data.h ../Core/Inc/gyro_filters.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal.h:
 ../Core/Inc/stm32wbxx_hal_conf.h:
@@ -156,20 +156,20 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/icm20948.h:
 ../Core/Inc/main.h:
 ../Utilities/sequencer/stm32_seq.h:
+../STM32_WPAN/App/hids_app.h:
 ../Core/Inc/config.h:
 ../Core/Inc/pins.h:
-../Core/Inc/gyro_filters.h:
-../Core/Inc/config.h:
 ../Core/Inc/buttons.h:
 ../Core/Inc/pins.h:
 ../Core/Inc/led.h:
 ../Core/Inc/motor.h:
 ../Core/Inc/gesture_detector.h:
+../Core/Inc/config.h:
 ../Core/Inc/sensor_data.h:
 ../Core/Inc/buttons.h:
-../Core/Inc/gyro_to_mouse.h:
 ../Core/Inc/adaptive_analyzer.h:
 ../Core/Inc/data_logger.h:
 ../Core/Inc/gesture_detector.h:
+../Core/Inc/gyro_to_mouse.h:
 ../Core/Inc/sensor_data.h:
-../STM32_WPAN/App/hids_app.h:
+../Core/Inc/gyro_filters.h:

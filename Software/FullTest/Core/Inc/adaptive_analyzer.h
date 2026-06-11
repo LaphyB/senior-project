@@ -10,6 +10,7 @@
 
 #include "data_logger.h"
 #include "config.h"
+#include "main.h"
 
 #include <stdio.h>
 #include <math.h>

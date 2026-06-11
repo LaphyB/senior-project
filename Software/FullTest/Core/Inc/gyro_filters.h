@@ -15,7 +15,7 @@
 #define LPF(raw, prev) \
     (gyro_lpf_alpha * (float)(raw) + (1.0f - gyro_lpf_alpha) * (prev))
 
-#define HPF(raw, prev_lp, prev_hp) \
+/*#define HPF(raw, prev_lp, prev_hp) \
     ({ \
         float input = (float)(raw); \
         prev_lp = gyro_hpf_alpha * input + (1.0f - gyro_hpf_alpha) * prev_lp; \
@@ -27,6 +27,6 @@
     ({ \
         float gyro_integral = (prev_angle) + (gyro_rate_dps) * (dt); \
         gyro_complementary_alpha * gyro_integral + (1.0f - gyro_complementary_alpha) * (accel_angle_deg); \
-    })
+    })*/
 
 #endif /* INC_GYRO_FILTERS_H_ */

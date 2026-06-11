@@ -51,7 +51,6 @@
 
 // Gyro
 
-
 // microSD
 
 #define SPI_CS_PORT GPIOB

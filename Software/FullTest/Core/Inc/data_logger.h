@@ -20,9 +20,11 @@
 
 #define LOG_GESTURE_MAX_ENTRIES     10000
 #define LOG_CONTINUOUS_MAX_ENTRIES  100000
+#define LOG_ANALYZER_MAX_ENTRIES    50
 
 #define LOG_GESTURE_FILENAME        "gestures.bin"
 #define LOG_CONTINUOUS_FILENAME     "continuous.bin"
+#define LOG_ANALYZER_FILENAME       "analyzer.bin"
 
 #define CONFIG_FILENAME "config.txt"
 
@@ -130,6 +132,18 @@ typedef struct
 
 } ContinuousLogEntry_t;  // ~44 bytes
 
+typedef struct {
+    uint32_t timestamp_ms;
+    float    old_threshold;
+    float    new_threshold;
+    uint32_t old_window_ms;
+    uint32_t new_window_ms;
+    float    old_peak_fraction;
+    float    new_peak_fraction;
+    float    avg_peak;
+    float    timeout_rate;
+} AnalyzerChangeEntry_t;
+
 // ============================================================================
 // FILE HEADER
 // Written at the start of each binary log file
@@ -184,5 +198,13 @@ void DataLogger_PrintGestureEntry(GestureLogEntry_t *entry);
 void DataLogger_SaveConfig(void);
 
 void DataLogger_LoadConfig(void);
+
+void DataLogger_LogAnalyzerChange(AnalyzerChangeEntry_t *entry);
+
+uint32_t DataLogger_GetLastAnalyzerEntries(AnalyzerChangeEntry_t *buffer, uint32_t count);
+
+void DataLogger_PrintAnalyzerEntry(AnalyzerChangeEntry_t *entry);
+
+void DataLogger_ClearAnalyzerLog(void);
 
 #endif /* INC_DATA_LOGGER_H_ */

@@ -67,7 +67,7 @@ Core/Src/adaptive_analyzer.o: ../Core/Src/adaptive_analyzer.c \
  ../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_gpio.h \
  ../Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_rtc.h \
  ../Middlewares/ST/STM32_WPAN/ble/core/ble_bufsize.h \
- ../Core/Inc/app_entry.h ../Core/Inc/app_common.h
+ ../Core/Inc/app_entry.h ../Core/Inc/app_common.h ../Core/Inc/main.h
 ../Core/Inc/adaptive_analyzer.h:
 ../Core/Inc/data_logger.h:
 ../Core/Inc/gesture_detector.h:
@@ -146,3 +146,4 @@ Core/Src/adaptive_analyzer.o: ../Core/Src/adaptive_analyzer.c \
 ../Middlewares/ST/STM32_WPAN/ble/core/ble_bufsize.h:
 ../Core/Inc/app_entry.h:
 ../Core/Inc/app_common.h:
+../Core/Inc/main.h:

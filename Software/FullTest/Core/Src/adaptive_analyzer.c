@@ -29,6 +29,7 @@ void AdaptiveAnalyzer_Run(void)
     float avg_peak_timeout       = 0.0f;
     float avg_duration_confirmed = 0.0f;
     float avg_duration_timeout   = 0.0f;
+    float avg_peak = 0.0f;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -118,7 +119,6 @@ void AdaptiveAnalyzer_Run(void)
         }
 
         // ── Fix threshold based on observed peaks ─────────────────
-        float avg_peak = 0.0f;
         if (avg_peak_timeout > 0 && avg_peak_confirmed > 0)
             avg_peak = (avg_peak_timeout + avg_peak_confirmed) / 2.0f;
         else if (avg_peak_timeout > 0)
@@ -178,9 +178,25 @@ void AdaptiveAnalyzer_Run(void)
     }
 
     if (changed)
-        printf("  Config updated, changes will take effect immediately\r\n");
-    else
-        printf("  No changes needed!\r\n");
+        {
+            printf("  Config updated, changes will take effect immediately\r\n");
+            DataLogger_SaveConfig();
+
+            // Log the change
+            AnalyzerChangeEntry_t change_entry;
+            change_entry.timestamp_ms    = HAL_GetTick();
+            change_entry.old_threshold   = entries[0].config_snapshot.gesture_magnitude_threshold;
+            change_entry.new_threshold   = gesture_magnitude_threshold;
+            change_entry.old_window_ms   = entries[0].config_snapshot.gesture_detection_window_ms;
+            change_entry.new_window_ms   = gesture_detection_window_ms;
+            change_entry.old_peak_fraction = entries[0].config_snapshot.gesture_peak_fraction;
+            change_entry.new_peak_fraction = gesture_peak_fraction;
+            change_entry.avg_peak        = (avg_peak_confirmed > 0) ? avg_peak_confirmed : avg_peak_timeout;
+            change_entry.timeout_rate    = (total > 0) ? (float)timeouts / (float)total : 0.0f;
+            DataLogger_LogAnalyzerChange(&change_entry);
+        }
+        else
+            printf("  No changes needed!\r\n");
 
     printf("--------------------------------------------------\r\n\r\n");
 }

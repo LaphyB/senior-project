@@ -18,8 +18,8 @@
 
 #define LOG_MAGIC              0xDEADBEEF
 #define LOG_VERSION            1
-#define GESTURE_BUFFER_SIZE    5
-#define CONTINUOUS_BUFFER_SIZE 5
+#define GESTURE_BUFFER_SIZE    3
+#define CONTINUOUS_BUFFER_SIZE 3
 #define FLUSH_INTERVAL_MS      30000
 
 // ============================================================================
@@ -45,6 +45,9 @@ static uint8_t s_files_open = 0;
 
 static LogFileHeader_t s_gesture_header;
 static LogFileHeader_t s_continuous_header;
+
+static FIL     s_analyzer_file;
+static LogFileHeader_t s_analyzer_header;
 
 // ============================================================================
 // PRIVATE HELPERS
@@ -202,8 +205,8 @@ void DataLogger_Init(FATFS *fs, FIL *fil, char *path)
 
     InitLogFile(LOG_GESTURE_FILENAME,    LOG_GESTURE_MAX_ENTRIES,    sizeof(GestureLogEntry_t));
     InitLogFile(LOG_CONTINUOUS_FILENAME, LOG_CONTINUOUS_MAX_ENTRIES, sizeof(ContinuousLogEntry_t));
+    InitLogFile(LOG_ANALYZER_FILENAME,   LOG_ANALYZER_MAX_ENTRIES,   sizeof(AnalyzerChangeEntry_t));
 
-    // Open both files permanently
     char full_path[32];
 
     snprintf(full_path, sizeof(full_path), "%s%s", s_path, LOG_GESTURE_FILENAME);
@@ -226,6 +229,19 @@ void DataLogger_Init(FATFS *fs, FIL *fil, char *path)
     }
     f_lseek(&s_continuous_file, 0);
     f_read(&s_continuous_file, &s_continuous_header, sizeof(LogFileHeader_t), &br);
+
+    // Open analyzer file
+    snprintf(full_path, sizeof(full_path), "%s%s", s_path, LOG_ANALYZER_FILENAME);
+    fres = f_open(&s_analyzer_file, full_path, FA_READ | FA_WRITE);
+    if (fres != FR_OK)
+    {
+        printf("DataLogger: failed to open analyzer file (%d)\r\n", fres);
+        f_close(&s_gesture_file);
+        f_close(&s_continuous_file);
+        return;
+    }
+    f_lseek(&s_analyzer_file, 0);
+    f_read(&s_analyzer_file, &s_analyzer_header, sizeof(LogFileHeader_t), &br);
 
     s_files_open = 1;
     printf("DataLogger: ready\r\n");
@@ -449,20 +465,20 @@ void DataLogger_SaveConfig(void)
     WRITE_FLOAT("gyro_bias_y",                 gyro_bias_y)
     WRITE_FLOAT("gyro_bias_z",                 gyro_bias_z)
     WRITE_FLOAT("gyro_lpf_alpha",              gyro_lpf_alpha)
-    WRITE_FLOAT("gyro_hpf_alpha",              gyro_hpf_alpha)
-    WRITE_FLOAT("gyro_complementary_alpha",    gyro_complementary_alpha)
+    //WRITE_FLOAT("gyro_hpf_alpha",              gyro_hpf_alpha)
+    //WRITE_FLOAT("gyro_complementary_alpha",    gyro_complementary_alpha)
     WRITE_FLOAT("gesture_magnitude_threshold", gesture_magnitude_threshold)
     WRITE_INT  ("gesture_detection_window_ms", gesture_detection_window_ms)
     WRITE_INT  ("gesture_cooldown_ms",         gesture_cooldown_ms)
     WRITE_INT  ("gesture_debounce_ms",         gesture_debounce_ms)
     WRITE_FLOAT("gesture_peak_fraction",       gesture_peak_fraction)
-    WRITE_FLOAT("gyro_sensitivity_scale",      gyro_sensitivity_scale)
-    WRITE_FLOAT("gyro_base_sensitivity",       gyro_base_sensitivity)
-    WRITE_FLOAT("gyro_accel_threshold_dps",    gyro_accel_threshold_dps)
-    WRITE_FLOAT("gyro_accel_multiplier",       gyro_accel_multiplier)
-    WRITE_INT  ("gyro_max_delta",              gyro_max_delta)
-    WRITE_INT  ("gyro_update_rate_hz",         gyro_update_rate_hz)
-    WRITE_INT  ("gyro_update_interval_ms",     gyro_update_interval_ms)
+    //WRITE_FLOAT("gyro_sensitivity_scale",      gyro_sensitivity_scale)
+    //WRITE_FLOAT("gyro_base_sensitivity",       gyro_base_sensitivity)
+    //WRITE_FLOAT("gyro_accel_threshold_dps",    gyro_accel_threshold_dps)
+    //WRITE_FLOAT("gyro_accel_multiplier",       gyro_accel_multiplier)
+    //WRITE_INT  ("gyro_max_delta",              gyro_max_delta)
+    //WRITE_INT  ("gyro_update_rate_hz",         gyro_update_rate_hz)
+    //WRITE_INT  ("gyro_update_interval_ms",     gyro_update_interval_ms)
 
     #undef WRITE_FLOAT
     #undef WRITE_INT
@@ -506,23 +522,83 @@ void DataLogger_LoadConfig(void)
         else if (strcmp(key, "gyro_bias_y")                  == 0) gyro_bias_y                  = atoff(value);
         else if (strcmp(key, "gyro_bias_z")                  == 0) gyro_bias_z                  = atoff(value);
         else if (strcmp(key, "gyro_lpf_alpha")               == 0) gyro_lpf_alpha               = atoff(value);
-        else if (strcmp(key, "gyro_hpf_alpha")               == 0) gyro_hpf_alpha               = atoff(value);
-        else if (strcmp(key, "gyro_complementary_alpha")     == 0) gyro_complementary_alpha     = atoff(value);
+        //else if (strcmp(key, "gyro_hpf_alpha")               == 0) gyro_hpf_alpha               = atoff(value);
+        //else if (strcmp(key, "gyro_complementary_alpha")     == 0) gyro_complementary_alpha     = atoff(value);
         else if (strcmp(key, "gesture_magnitude_threshold")  == 0) gesture_magnitude_threshold  = atoff(value);
         else if (strcmp(key, "gesture_detection_window_ms")  == 0) gesture_detection_window_ms  = (uint32_t)atol(value);
         else if (strcmp(key, "gesture_cooldown_ms")          == 0) gesture_cooldown_ms          = (uint32_t)atol(value);
         else if (strcmp(key, "gesture_debounce_ms")          == 0) gesture_debounce_ms          = (uint32_t)atol(value);
         else if (strcmp(key, "gesture_peak_fraction")        == 0) gesture_peak_fraction        = atoff(value);
-        else if (strcmp(key, "gyro_sensitivity_scale")       == 0) gyro_sensitivity_scale       = atoff(value);
-        else if (strcmp(key, "gyro_base_sensitivity")        == 0) gyro_base_sensitivity        = atoff(value);
-        else if (strcmp(key, "gyro_accel_threshold_dps")     == 0) gyro_accel_threshold_dps     = atoff(value);
-        else if (strcmp(key, "gyro_accel_multiplier")        == 0) gyro_accel_multiplier        = atoff(value);
-        else if (strcmp(key, "gyro_max_delta")               == 0) gyro_max_delta               = (int32_t)atol(value);
-        else if (strcmp(key, "gyro_update_rate_hz")          == 0) gyro_update_rate_hz          = (int32_t)atol(value);
-        else if (strcmp(key, "gyro_update_interval_ms")      == 0) gyro_update_interval_ms      = (int32_t)atol(value);
+        //else if (strcmp(key, "gyro_sensitivity_scale")       == 0) gyro_sensitivity_scale       = atoff(value);
+        //else if (strcmp(key, "gyro_base_sensitivity")        == 0) gyro_base_sensitivity        = atoff(value);
+        //else if (strcmp(key, "gyro_accel_threshold_dps")     == 0) gyro_accel_threshold_dps     = atoff(value);
+        //else if (strcmp(key, "gyro_accel_multiplier")        == 0) gyro_accel_multiplier        = atoff(value);
+        //else if (strcmp(key, "gyro_max_delta")               == 0) gyro_max_delta               = (int32_t)atol(value);
+        //else if (strcmp(key, "gyro_update_rate_hz")          == 0) gyro_update_rate_hz          = (int32_t)atol(value);
+        //else if (strcmp(key, "gyro_update_interval_ms")      == 0) gyro_update_interval_ms      = (int32_t)atol(value);
         else printf("DataLogger_LoadConfig: unknown key '%s'\r\n", key);
     }
 
     f_close(&fil);
     printf("DataLogger: config loaded\r\n");
+}
+
+void DataLogger_LogAnalyzerChange(AnalyzerChangeEntry_t *entry)
+{
+    if (!s_files_open) return;
+    WriteEntry(&s_analyzer_file, &s_analyzer_header, entry, sizeof(AnalyzerChangeEntry_t));
+    f_lseek(&s_analyzer_file, 0);
+    UINT bw;
+    f_write(&s_analyzer_file, &s_analyzer_header, sizeof(LogFileHeader_t), &bw);
+    f_sync(&s_analyzer_file);
+}
+
+uint32_t DataLogger_GetLastAnalyzerEntries(AnalyzerChangeEntry_t *buffer, uint32_t count)
+{
+    if (!s_files_open) return 0;
+    if (count > s_analyzer_header.count) count = s_analyzer_header.count;
+
+    uint32_t start = (s_analyzer_header.tail + s_analyzer_header.max_entries - count) % s_analyzer_header.max_entries;
+    uint32_t read_count = 0;
+    UINT br;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t idx    = (start + i) % s_analyzer_header.max_entries;
+        uint32_t offset = sizeof(LogFileHeader_t) + (idx * sizeof(AnalyzerChangeEntry_t));
+        if (f_lseek(&s_analyzer_file, offset) != FR_OK) break;
+        if (f_read(&s_analyzer_file, &buffer[i], sizeof(AnalyzerChangeEntry_t), &br) != FR_OK) break;
+        if (br != sizeof(AnalyzerChangeEntry_t)) break;
+        read_count++;
+    }
+    return read_count;
+}
+
+void DataLogger_PrintAnalyzerEntry(AnalyzerChangeEntry_t *entry)
+{
+    printf("--- Analyzer Change ---\r\n");
+    printf("  Time:         %lu ms\r\n",   (unsigned long)entry->timestamp_ms);
+    printf("  Threshold:    %.1f -> %.1f\r\n", entry->old_threshold, entry->new_threshold);
+    printf("  Window:       %lu -> %lu ms\r\n", (unsigned long)entry->old_window_ms, (unsigned long)entry->new_window_ms);
+    printf("  Peak Frac:    %.2f -> %.2f\r\n", entry->old_peak_fraction, entry->new_peak_fraction);
+    printf("  Avg Peak:     %.1f\r\n",     entry->avg_peak);
+    printf("  Timeout Rate: %.2f\r\n",     entry->timeout_rate);
+}
+
+void DataLogger_ClearAnalyzerLog(void)
+{
+    if (s_files_open) f_close(&s_analyzer_file);
+
+    char full_path[32];
+    snprintf(full_path, sizeof(full_path), "%s%s", s_path, LOG_ANALYZER_FILENAME);
+    f_unlink(full_path);
+    InitLogFile(LOG_ANALYZER_FILENAME, LOG_ANALYZER_MAX_ENTRIES, sizeof(AnalyzerChangeEntry_t));
+
+    FRESULT fres = f_open(&s_analyzer_file, full_path, FA_READ | FA_WRITE);
+    if (fres == FR_OK)
+    {
+        UINT br;
+        f_lseek(&s_analyzer_file, 0);
+        f_read(&s_analyzer_file, &s_analyzer_header, sizeof(LogFileHeader_t), &br);
+    }
 }

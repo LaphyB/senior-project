@@ -156,7 +156,7 @@
  * Maximum number of simultaneous connections that the device will support.
  * Valid values are from 1 to 8
  */
-#define CFG_BLE_NUM_LINK            2
+#define CFG_BLE_NUM_LINK            1
 
 /**
  * Maximum number of Services that can be stored in the GATT database.
@@ -212,7 +212,7 @@
 /**
  * Sleep clock accuracy in Peripheral mode (ppm value)
  */
-#define CFG_BLE_PERIPHERAL_SCA   500
+#define CFG_BLE_PERIPHERAL_SCA   1000
 
 /**
  * Sleep clock accuracy in Central mode
@@ -312,7 +312,7 @@
  */
 #define CFG_BLE_OPTIONS_EXT  (SHCI_C2_BLE_INIT_OPTIONS_APPEARANCE_READONLY | SHCI_C2_BLE_INIT_OPTIONS_ENHANCED_ATT_NOTSUPPORTED)
 
-#define CFG_BLE_MAX_COC_INITIATOR_NBR   (32)
+#define CFG_BLE_MAX_COC_INITIATOR_NBR   (4)
 
 #define CFG_BLE_MIN_TX_POWER            (0)
 
@@ -346,7 +346,7 @@
  * This parameter is considered by the CPU2 when CFG_BLE_OPTIONS has SHCI_C2_BLE_INIT_OPTIONS_EXT_ADV flag set
  */
 
-#define CFG_BLE_MAX_ADV_DATA_LEN    (1650)
+#define CFG_BLE_MAX_ADV_DATA_LEN    (31)
 
  /* RF TX Path Compensation Value (16-bit signed integer). Units: 0.1 dB.
   * Range: -1280 .. 1280
@@ -385,8 +385,8 @@
  * for a CC/CS event, In that case, the notification TL_BLE_HCI_ToNot() is called to indicate
  * to the application a HCI command did not receive its command event within 30s (Default HCI Timeout).
  */
-#define CFG_TLBLE_EVT_QUEUE_LENGTH 1
-/**
+#define CFG_TLBLE_EVT_QUEUE_LENGTH 2
+/*
  * This parameter should be set to fit most events received by the HCI layer. It defines the buffer size of each element
  * allocated in the queue of received events and can be used to optimize the amount of RAM allocated by the Memory Manager.
  * It should not exceed 255 which is the maximum HCI packet payload size (a greater value is a lost of memory as it will
@@ -395,7 +395,7 @@
  * The default value is set to 27 to allow receiving an event of MTU size in a single buffer. This value maybe reduced
  * further depending on the application.
  */
-#define CFG_TLBLE_MOST_EVENT_PAYLOAD_SIZE 100   /**< Set to 255 with the memory manager and the mailbox */
+#define CFG_TLBLE_MOST_EVENT_PAYLOAD_SIZE 64   /**< Set to 255 with the memory manager and the mailbox */
 
 #define TL_BLE_EVENT_FRAME_SIZE ( TL_EVT_HDR_SIZE + CFG_TLBLE_MOST_EVENT_PAYLOAD_SIZE )
 /******************************************************************************
@@ -615,8 +615,8 @@ typedef enum
  * max buffer Size to queue data traces and max data trace allowed.
  * Only Used if DBG_TRACE_USE_CIRCULAR_QUEUE is defined
  */
-#define DBG_TRACE_MSG_QUEUE_SIZE 512
-#define MAX_DBG_TRACE_MSG_SIZE   256
+#define DBG_TRACE_MSG_QUEUE_SIZE 256
+#define MAX_DBG_TRACE_MSG_SIZE   128
 
 /* USER CODE BEGIN Defines */
 

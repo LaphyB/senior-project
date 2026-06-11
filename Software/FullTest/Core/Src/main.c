@@ -22,25 +22,23 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
 
+#include <stdio.h>
 #include "icm20948.h"
 #include "stm32_seq.h"
+#include "hids_app.h"
 
 #include "config.h"
 #include "pins.h"
-
-#include "gyro_filters.h"
 
 #include "buttons.h"
 #include "led.h"
 #include "motor.h"
 #include "gesture_detector.h"
-#include "gyro_to_mouse.h"
 #include "adaptive_analyzer.h"
+#include "gyro_to_mouse.h"
 #include "sensor_data.h"
-
-#include "hids_app.h"
+#include "gyro_filters.h"
 
 /* USER CODE END Includes */
 
@@ -62,6 +60,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 ADC_HandleTypeDef hadc1;
+
 DMA_HandleTypeDef hdma_adc1;
 
 I2C_HandleTypeDef hi2c1;
@@ -79,6 +78,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 
 ICM20948_Data_t imu_data;
+
 MagData_t mag_data;
 
 /* USER CODE END PV */
@@ -100,7 +100,8 @@ static void MX_USART1_UART_Init(void);
 
 void TakeData(SensorData_t *datastruct);
 void PrintDisplay(SensorData_t *data, bool blockHID, MousePos_t mouse_pos, GestureType_t gesture);
-void PrintAnalyzerView();
+void PrintAnalyzerView(void);
+void PrintLogView(void);
 
 /* USER CODE END PFP */
 
@@ -117,324 +118,247 @@ volatile uint16_t adc_results[4] __attribute__((aligned(32)));
   */
 int main(void)
 {
+    /* USER CODE BEGIN 1 */
+    /* USER CODE END 1 */
 
-  /* USER CODE BEGIN 1 */
+    HAL_Init();
+    MX_APPE_Config();
 
-  /* USER CODE END 1 */
+    /* USER CODE BEGIN Init */
+    /* USER CODE END Init */
 
-  /* MCU Configuration--------------------------------------------------------*/
+    SystemClock_Config();
+    PeriphCommonClock_Config();
+    MX_IPCC_Init();
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-  /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
-  MX_APPE_Config();
+    /* USER CODE BEGIN SysInit */
+    /* USER CODE END SysInit */
 
-  /* USER CODE BEGIN Init */
+    MX_RF_Init();
+    MX_GPIO_Init();
+    MX_DMA_Init();
+    MX_ADC1_Init();
+    MX_I2C1_Init();
+    MX_SPI1_Init();
+    if (MX_FATFS_Init() != APP_OK)
+    {
+        Error_Handler();
+    }
+    MX_RNG_Init();
+    MX_RTC_Init();
+    MX_USART1_UART_Init();
 
-  /* USER CODE END Init */
+    /* USER CODE BEGIN 2 */
+    /* USER CODE END 2 */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    MX_APPE_Init();
 
-  /* Configure the peripherals common clocks */
-  PeriphCommonClock_Config();
+    /* USER CODE BEGIN WHILE */
 
-  /* IPCC initialisation */
-  MX_IPCC_Init();
+    printf("\033[2J\033[H");
 
-  /* USER CODE BEGIN SysInit */
+    printf("Setting up device...\r\n");
 
-  /* USER CODE END SysInit */
+    extern FATFS USERFatFs;
+    extern FIL   USERFile;
+    extern char  USERPath[4];
 
-  /* Initialize all configured peripherals */
-  MX_RF_Init();
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_I2C1_Init();
-  MX_SPI1_Init();
-  if (MX_FATFS_Init() != APP_OK) {
-    Error_Handler();
-  }
-  MX_RNG_Init();
-  MX_RTC_Init();
-  MX_USART1_UART_Init();
-  /* USER CODE BEGIN 2 */
+    printf("Loading Initial Configs...\r\n");
+    Config_Init();
+    printf("Initial Configs Loaded!\r\n");
 
-  /* USER CODE END 2 */
+    printf("Calibrating ADC...\r\n");
+    if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
+    {
+        printf("ADC Calibration failed!\r\n");
+        while(1);
+    }
+    printf("ADC calibrated successfully!\r\n");
 
-  /* Init code for STM32_WPAN */
-  MX_APPE_Init();
+    printf("Starting DMA...\r\n");
+    if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_results, 4) != HAL_OK)
+    {
+        printf("DMA start failed!\r\n");
+        while(1);
+    }
+    printf("DMA started successfully!\r\n");
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+    printf("Initializing ICM-20948...\r\n");
+    if (ICM20948_Init(&hi2c1) != HAL_OK)
+    {
+        printf("ICM-20948 initialization failed!\r\n");
+    }
+    printf("ICM-20948 initialized successfully!\r\n");
 
-	printf("Setting up device...\r\n");
+    printf("Initializing magnetometer...\r\n");
+    if (ICM20948_InitMagnetometer(&hi2c1) != HAL_OK)
+    {
+        printf("Magnetometer initialization failed!\r\n");
+    }
+    printf("Magnetometer ready!\r\n");
 
-	extern FATFS USERFatFs;
-	extern FIL USERFile;
-	extern char USERPath[4];
+    printf("Initializing SDCard Reader and Data Logger...\r\n");
+    DataLogger_Init(&USERFatFs, &USERFile, USERPath);
+    DataLogger_LoadConfig();
+    printf("SDCard Reader and Data Logger ready!\r\n");
 
-	printf("Loading Initial Configs...\r\n");
-	Config_Init();
-	printf("Initial Configs Loaded!\r\n");
+    printf("Initializing modules...\r\n");
+    GestureDetector_Init();
 
-	printf("Calibrating ADC...\r\n");
-	if(HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
-	{
-	  printf("ADC Calibration failed!\r\n");
-	  while(1);
-	}
-	printf("ADC calibrated successfully!\r\n");
+    printf("Initializing Variables...\r\n");
+    static uint32_t last_led_toggle = 0;
+    static bool     motor_triggered = false;
+    static uint8_t  display_page    = 0;
+    static float    smooth_gyro_x   = 0.0f;
+    static float    smooth_gyro_y   = 0.0f;
+    static float    smooth_gyro_z   = 0.0f;
+    static float    smooth_mag_x    = 0.0f;
+    static float    smooth_mag_y    = 0.0f;
+    static float    smooth_mag_z    = 0.0f;
+    static bool     first           = true;
+    static bool     blockHID        = false;
+    SensorData_t    sensor_data;
 
-  printf("Starting DMA...\r\n");
-  if(HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_results, 4) != HAL_OK)
-  {
-	  printf("DMA start failed!\r\n");
-	  while(1);
-  }
-  printf("DMA started successfully!\r\n");
+    printf("Entering Main Loop!\r\n");
 
-  printf("Initializing ICM-20948...\r\n");
-  if (ICM20948_Init(&hi2c1) != HAL_OK)
-  {
-	  printf("ICM-20948 initialization failed!\r\n");
+    /* USER CODE END 2 */
 
-  }
-  printf("ICM-20948 initialized successfully!\r\n");
+    while (1)
+    {
+        /* USER CODE END WHILE */
 
-  printf("Verifying ICM-20948 connection...\r\n");
-  uint8_t who_am_i;
-  if (ICM20948_WhoAmI(&hi2c1, &who_am_i) != HAL_OK)
-  {
-	  printf("WHO_AM_I = 0x%02X (expected 0xEA)\r\n", who_am_i);
-  }
-  printf("ICM-20948 connection verified!\r\n");
+        MX_APPE_Process();
+        UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
 
-  // Initialize magnetometer
-  printf("Initializing magnetometer...\r\n");
-  if (ICM20948_InitMagnetometer(&hi2c1) != HAL_OK)
-  {
-	  printf("Magnetometer initialization failed!\r\n");
-  }
-  printf("Magnetometer ready!\r\n");
+        /* USER CODE BEGIN 3 */
 
-  printf("Initializing SDCard Reader and Data Logger...\r\n");
-  DataLogger_Init(&USERFatFs, &USERFile, USERPath);
-  DataLogger_LoadConfig();  // overwrites defaults with saved values if file exists
-  printf("SDCard Reader and Data Logger ready!\r\n");
+        // Update timers
+        DataLogger_Update();
+        setMotorTimed_Update();
 
-  printf("Initializing modules...\r\n");
+        // Heartbeat LED
+        if (HAL_GetTick() - last_led_toggle >= 500)
+        {
+            toggleLED();
+            last_led_toggle = HAL_GetTick();
+        }
 
-  GestureDetector_Init();
+        // Read all sensor data
+        TakeData(&sensor_data);
 
-  printf("Initializing Variables...\r\n");
+        // Gyro bias correction
+        sensor_data.gyro_x -= (int16_t)gyro_bias_x;
+        sensor_data.gyro_y -= (int16_t)gyro_bias_y;
 
-  static uint32_t last_led_toggle = 0;
-  static bool motor_triggered = false;
-  static uint8_t display_page = 0;
+        // BUTTON5 - block HID
+        if (!sensor_data.buttons.BUTTON5)
+            blockHID = true;
+        else
+            blockHID = false;
 
-  // For data struct
-  SensorData_t sensor_data;
+        // BUTTON6 - haptic feedback
+        if (!sensor_data.buttons.BUTTON6)
+        {
+            if (!motor_triggered)
+            {
+                setMotorTimed(BOTH, 1000);
+                motor_triggered = true;
+            }
+        }
+        else
+        {
+            motor_triggered = false;
+        }
 
-  // For LPF filtering
-  static float 	smooth_gyro_x = 0
-		  	  , smooth_gyro_y = 0
-		  	  , smooth_gyro_z = 0
-  	  	  	  ,	smooth_mag_x = 0
-  		  	  , smooth_mag_y = 0
-  		  	  , smooth_mag_z = 0;
-  static bool first = true;
+        // JS1 - run adaptive analyzer
+        static bool js1_last = true;
+        bool js1_now = sensor_data.buttons.JOYSTICKBUTTON1;
+        if (js1_last == false && js1_now == true)
+        {
+            AdaptiveAnalyzer_Run();
+        }
+        js1_last = js1_now;
 
-  // Temp int for For cursor handling
-  //int8_t mouse_x, mouse_y;
-  bool blockHID = false;
+        // JS2 - break config for demo
+        static bool js2_last = true;
+        bool js2_now = sensor_data.buttons.BUTTON2;
+        if (js2_last == false && js2_now == true)
+        {
+            AdaptiveAnalyzer_BreakConfig();
+        }
+        js2_last = js2_now;
 
-  printf("Entering Main Loop!\r\n");
+        // BUTTON4 - cycle display page
+        static bool btn4_last = true;
+        bool btn4_now = sensor_data.buttons.BUTTON4;
+        if (btn4_last == false && btn4_now == true)
+        {
+            display_page = (display_page + 1) % 4;
+            printf("\033[2J\033[H");
+        }
+        btn4_last = btn4_now;
 
-  /* USER CODE END 2 */
+        // Gesture detection and haptic feedback
+        GestureType_t gesture = GestureDetector_Update(&sensor_data);
+        if (gesture != GESTURE_NONE)
+        {
+            switch (gesture)
+            {
+                case GESTURE_NONE:       break;
+                case GESTURE_FLICK_LEFT:  setMotorTimed(BOTH, 100); break;
+                case GESTURE_FLICK_RIGHT: setMotorTimed(BOTH, 100); break;
+                case GESTURE_FLICK_UP:    setMotorTimed(BOTH, 100); break;
+                case GESTURE_FLICK_DOWN:  setMotorTimed(BOTH, 100); break;
+                case GESTURE_ROTATE_CW:   setMotorTimed(BOTH, 100); break;
+                case GESTURE_ROTATE_CCW:  setMotorTimed(BOTH, 100); break;
+            }
+        }
 
-  while (1)
-  {
-    /* USER CODE END WHILE */
-	MX_APPE_Process();
-	UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+        // Calculate Cursor Movement
+        MousePos_t mouse_pos = GyroMouse_Update(sensor_data.mag_x, sensor_data.mag_y, sensor_data.mag_z, blockHID);
 
-    /* USER CODE BEGIN 3 */
+        // BLE HID mouse reports via gyroscope
+		static bool  last_block = false;
+		static float accum_x    = 0.0f;
+		static float accum_y    = 0.0f;
 
-	  // Update Timers
-	  DataLogger_Update();
-	  setMotorTimed_Update();
+		if (last_block && !blockHID)
+			HIDSAPP_SendMouseReport(0, 0, 0);
+		last_block = blockHID;
 
-	  // Heartbeat
-	  if (HAL_GetTick() - last_led_toggle >= 500)
-	  {
-	      toggleLED();
-	      last_led_toggle = HAL_GetTick();
-	  }
+		if (!blockHID)
+		{
+			float sg_x, sg_y;
+			GyroMouse_GetSmoothedGyro(sensor_data.gyro_x, sensor_data.gyro_y, &sg_x, &sg_y);
 
-	  // Take data
-	  TakeData(&sensor_data);
+			accum_x += -sg_y / 1500.0f;
+			accum_y +=  sg_x / 1500.0f;
 
-	  // Bias Correction
-	  sensor_data.gyro_x -= (int16_t)gyro_bias_x;
-	  sensor_data.gyro_y -= (int16_t)gyro_bias_y;
+			if (accum_x >  20.0f) accum_x =  20.0f;
+			if (accum_x < -20.0f) accum_x = -20.0f;
+			if (accum_y >  20.0f) accum_y =  20.0f;
+			if (accum_y < -20.0f) accum_y = -20.0f;
 
-	  // Use buttons
+			int8_t report_x = (int8_t)accum_x;
+			int8_t report_y = (int8_t)accum_y;
 
-	  if(!sensor_data.buttons.BUTTON1)
-	  {
-		  blockHID = true;
-	  }
-	  else
-	  {
-		  blockHID = false;
-	  }
+			accum_x -= report_x;
+			accum_y -= report_y;
 
-	  if (!sensor_data.buttons.BUTTON6)
-	  {
-	      if (!motor_triggered)
-	      {
-	          setMotorTimed(BOTH, 3000);
-	          motor_triggered = true;
-	      }
-	  }
-	  else
-	  {
-	      motor_triggered = false;
-	  }
+			//if (report_x != 0 || report_y != 0)
+			HIDSAPP_SendMouseReport(report_x, report_y, 0);
+		}
 
-	  // JS1 - run analyzer
-	  static bool js1_last = true;
-	  bool js1_now = sensor_data.buttons.JOYSTICKBUTTON1;
-	  if (js1_last == false && js1_now == true)
-	      AdaptiveAnalyzer_Run();
-	  js1_last = js1_now;
-
-	  // JS2 - break config for demo
-	  static bool js2_last = true;
-	  bool js2_now = sensor_data.buttons.JOYSTICKBUTTON2;
-	  if (js2_last == false && js2_now == true)
-	      AdaptiveAnalyzer_BreakConfig();
-	  js2_last = js2_now;
-
-	  // Toggle view on BUTTON2 release
-	  static bool btn2_last = true;
-	  bool btn2_now = sensor_data.buttons.BUTTON4;
-	  if (btn2_last == false && btn2_now == true)
-	  {
-	      display_page = (display_page + 1) % 3;
-	      printf("\033[2J\033[H");
-	  }
-	  btn2_last = btn2_now;
-
-	  // Apply LPF Filter / Smooth Data
-	  if (first)
-	  {
-		  smooth_gyro_x = sensor_data.gyro_x;
-		  smooth_gyro_y = sensor_data.gyro_y;
-		  smooth_gyro_z = sensor_data.gyro_z;
-
-		  smooth_mag_x = sensor_data.mag_x;
-		  smooth_mag_y = sensor_data.mag_y;
-		  smooth_mag_z = sensor_data.mag_z;
-
-		  first = false;
-	  }
-	  else
-	  {
-		  smooth_gyro_x = LPF(sensor_data.gyro_x, smooth_gyro_x);
-		  smooth_gyro_y = LPF(sensor_data.gyro_y, smooth_gyro_y);
-		  smooth_gyro_z = LPF(sensor_data.gyro_z, smooth_gyro_z);
-
-		  smooth_mag_x = LPF(sensor_data.mag_x, smooth_mag_x);
-		  smooth_mag_y = LPF(sensor_data.mag_y, smooth_mag_y);
-		  smooth_mag_z = LPF(sensor_data.mag_z, smooth_mag_z);
-	  }
-
-	  // Detect Gestures
-	  GestureType_t gesture = GestureDetector_Update(&sensor_data);
-
-	  if (gesture != GESTURE_NONE)
-	  {
-		  switch(gesture)
-		  {
-		  	  case GESTURE_NONE:
-		  		  break;
-		  	  case GESTURE_FLICK_LEFT:
-			          setMotorTimed(BOTH, 100);
-				   break;
-			   case GESTURE_FLICK_RIGHT:
-			          setMotorTimed(BOTH, 100);
-				   break;
-			   case GESTURE_FLICK_UP:
-			          setMotorTimed(BOTH, 100);
-				   break;
-			   case GESTURE_FLICK_DOWN:
-			          setMotorTimed(BOTH, 100);
-				   break;
-			   case GESTURE_ROTATE_CW:
-			          setMotorTimed(BOTH, 100);
-				   break;
-			   case GESTURE_ROTATE_CCW:
-			          setMotorTimed(BOTH, 100);
-				   break;
-		  }
-	  }
-
-	  bool gestureBlock = (GestureDetector_GetState() != STATE_IDLE);
-
-	  // Handle cursor movement
-	  	  MousePos_t mouse_pos = GyroMouse_Update( smooth_mag_x, smooth_mag_y, smooth_mag_z, blockHID);
-
-	  	  // Send BLE HID mouse report
-	  	  if (!blockHID)
-	  	  {
-	  		  static bool last_block = false;
-	  		  static float accum_x = 0;
-	  		  static float accum_y = 0;
-
-	  		  if (last_block && !blockHID)
-	  		      HIDSAPP_SendMouseReport(0, 0, 0);
-	  		  last_block = blockHID;
-
-	  		  if (!blockHID)
-	  		  {
-	  		      accum_x += -smooth_gyro_y / 20.0f;  // was 50, now faster
-	  		      accum_y +=  smooth_gyro_x / 20.0f;
-
-	  		      // Clamp to prevent huge jumps
-	  		      if (accum_x > 20)  accum_x = 20;
-	  		      if (accum_x < -20) accum_x = -20;
-	  		      if (accum_y > 20)  accum_y = 20;
-	  		      if (accum_y < -20) accum_y = -20;
-
-	  		      int8_t report_x = (int8_t)accum_x;
-	  		      int8_t report_y = (int8_t)accum_y;
-
-	  		      accum_x -= report_x;
-	  		      accum_y -= report_y;
-
-	  		      if (report_x != 0 || report_y != 0)
-	  		          HIDSAPP_SendMouseReport(report_x, report_y, 0);
-	  		  }
-	  	  }
-
-	  // Display
-	  switch(display_page)
-	  {
-	      case 0:
-	          break;
-	      case 1:
-	          PrintDisplay(&sensor_data, blockHID, mouse_pos, gesture);
-	          break;
-	      case 2:
-	          PrintAnalyzerView();
-	          break;
-	  }
-
-  }
-  /* USER CODE END 3 */
+        // Display
+        switch (display_page)
+        {
+            case 0: break;
+            case 1: PrintDisplay(&sensor_data, blockHID, mouse_pos, gesture); break;
+            case 2: PrintAnalyzerView(); break;
+            case 3: PrintLogView(); break;
+        }
+    }
+    /* USER CODE END 3 */
 }
 
 /**
@@ -987,8 +911,8 @@ void TakeData(SensorData_t *datastruct)
 
 void PrintDisplay(SensorData_t *data, bool blockHID, MousePos_t mouse_pos, GestureType_t gesture)
 {
-    static GestureType_t last_gesture = GESTURE_NONE;
-    static uint32_t last_gesture_time = 0;
+    static GestureType_t last_gesture      = GESTURE_NONE;
+    static uint32_t      last_gesture_time = 0;
 
     if (gesture != GESTURE_NONE)
     {
@@ -996,88 +920,86 @@ void PrintDisplay(SensorData_t *data, bool blockHID, MousePos_t mouse_pos, Gestu
         last_gesture_time = HAL_GetTick();
     }
 
-    uint32_t time_since = (last_gesture_time == 0) ? 0 : (HAL_GetTick() - last_gesture_time);
+    uint32_t time_since = last_gesture_time == 0 ? 0 : HAL_GetTick() - last_gesture_time;
 
-    // Row positions
-    #define R_BUTTONS   1
-    #define R_JOY1      11
-    #define R_JOY2      15
-    #define R_SENSORS   19
-    #define R_MOUSE     30
-    #define R_GESTURE   34
+    printf("\033[1;1H[ BUTTONS ]\033[K");
+    printf("\033[2;1HBTN1:%s BTN2:%s BTN3:%s\033[K", data->buttons.BUTTON1 ? "UP" : "DN", data->buttons.BUTTON2 ? "UP" : "DN", data->buttons.BUTTON3 ? "UP" : "DN");
+    printf("\033[3;1HBTN4:%s BTN5:%s BTN6:%s\033[K", data->buttons.BUTTON4 ? "UP" : "DN", data->buttons.BUTTON5 ? "UP" : "DN", data->buttons.BUTTON6 ? "UP" : "DN");
+    printf("\033[4;1HJS1:%s JS2:%s HID:%s\033[K",    data->buttons.JOYSTICKBUTTON1 ? "UP" : "DN", data->buttons.JOYSTICKBUTTON2 ? "UP" : "DN", blockHID ? "BLK" : "ON ");
 
-    // Buttons
-    printf("\033[%d;1H[ BUTTONS ]\033[K",          R_BUTTONS);
-    printf("\033[%d;1HBTN1: %s\033[K",  R_BUTTONS+1, data->buttons.BUTTON1         ? "UP  " : "DOWN");
-    printf("\033[%d;1HBTN2: %s\033[K",  R_BUTTONS+2, data->buttons.BUTTON2         ? "UP  " : "DOWN");
-    printf("\033[%d;1HBTN3: %s\033[K",  R_BUTTONS+3, data->buttons.BUTTON3         ? "UP  " : "DOWN");
-    printf("\033[%d;1HBTN4: %s\033[K",  R_BUTTONS+4, data->buttons.BUTTON4         ? "UP  " : "DOWN");
-    printf("\033[%d;1HBTN5: %s\033[K",  R_BUTTONS+5, data->buttons.BUTTON5         ? "UP  " : "DOWN");
-    printf("\033[%d;1HBTN6: %s\033[K",  R_BUTTONS+6, data->buttons.BUTTON6         ? "UP  " : "DOWN");  // wait this is R_JOY1, let me fix
-    printf("\033[%d;1HJS1:  %s\033[K",  R_BUTTONS+7, data->buttons.JOYSTICKBUTTON1 ? "UP  " : "DOWN");
-    printf("\033[%d;1HJS2:  %s\033[K",  R_BUTTONS+8, data->buttons.JOYSTICKBUTTON2 ? "UP  " : "DOWN");
+    printf("\033[6;1H[ JOYSTICKS ]\033[K");
+    printf("\033[7;1HJS1 X:%4d Y:%4d\033[K", data->js1_x, data->js1_y);
+    printf("\033[8;1HJS2 X:%4d Y:%4d\033[K", data->js2_x, data->js2_y);
 
-    // Joystick 1
-    printf("\033[%d;1H[ JOYSTICK 1 ]\033[K", R_JOY1);
-    printf("\033[%d;1HX: %4d\033[K",         R_JOY1+1, data->js1_x);
-    printf("\033[%d;1HY: %4d\033[K",         R_JOY1+2, data->js1_y);
+    printf("\033[10;1H[ SENSORS ]\033[K");
+    printf("\033[11;1HGyro  X:%7.1f Y:%7.1f Z:%7.1f\033[K", (float)data->gyro_x, (float)data->gyro_y, (float)data->gyro_z);
+    printf("\033[12;1HAccel X:%7d Y:%7d Z:%7d\033[K",       data->accel_x, data->accel_y, data->accel_z);
+    printf("\033[13;1HMag   X:%7.2f Y:%7.2f Z:%7.2f uT\033[K", data->mag_x, data->mag_y, data->mag_z);
 
-    // Joystick 2
-    printf("\033[%d;1H[ JOYSTICK 2 ]\033[K", R_JOY2);
-    printf("\033[%d;1HX: %4d\033[K",         R_JOY2+1, data->js2_x);
-    printf("\033[%d;1HY: %4d\033[K",         R_JOY2+2, data->js2_y);
+    printf("\033[15;1H[ MOUSE ]\033[K");
+    printf("\033[16;1HX:%4d Y:%4d\033[K", mouse_pos.x, mouse_pos.y);
 
-    // Sensors
-    printf("\033[%d;1H[ SENSORS ]\033[K",       R_SENSORS);
-    printf("\033[%d;1HGyro  X: %7.1f\033[K",    R_SENSORS+1,  (float)data->gyro_x);
-    printf("\033[%d;1HGyro  Y: %7.1f\033[K",    R_SENSORS+2,  (float)data->gyro_y);
-    printf("\033[%d;1HGyro  Z: %7.1f\033[K",    R_SENSORS+3,  (float)data->gyro_z);
-    printf("\033[%d;1HAccel X: %7d\033[K",      R_SENSORS+4,  data->accel_x);
-    printf("\033[%d;1HAccel Y: %7d\033[K",      R_SENSORS+5,  data->accel_y);
-    printf("\033[%d;1HAccel Z: %7d\033[K",      R_SENSORS+6,  data->accel_z);
-    printf("\033[%d;1HMag   X: %7.2f uT\033[K", R_SENSORS+7,  data->mag_x);
-    printf("\033[%d;1HMag   Y: %7.2f uT\033[K", R_SENSORS+8,  data->mag_y);
-    printf("\033[%d;1HMag   Z: %7.2f uT\033[K", R_SENSORS+9,  data->mag_z);
-
-    // Mouse
-    printf("\033[%d;1H[ MOUSE ]\033[K",           R_MOUSE);
-    printf("\033[%d;1HX: %4d\033[K",              R_MOUSE+1, mouse_pos.x);
-    printf("\033[%d;1HY: %4d\033[K",              R_MOUSE+2, mouse_pos.y);
-
-    // Gesture
-	printf("\033[%d;1H[ GESTURE ]\033[K",  R_GESTURE);
-	if (last_gesture == GESTURE_NONE)
-	{
-		printf("\033[%d;1HNone yet\033[K", R_GESTURE+1);
-		printf("\033[%d;1H        \033[K", R_GESTURE+2);
-	}
-	else
-	{
-		printf("\033[%d;1H%-15s\033[K",      R_GESTURE+1, GestureDetector_Gesturetostring(last_gesture));
-		printf("\033[%d;1H%lu ms ago\033[K", R_GESTURE+2, (unsigned long)time_since);
-	}
+    printf("\033[18;1H[ GESTURE ]\033[K");
+    if (last_gesture == GESTURE_NONE)
+        printf("\033[19;1HNone yet\033[K");
+    else
+        printf("\033[19;1H%-15s %lums ago\033[K", GestureDetector_Gesturetostring(last_gesture), (unsigned long)time_since);
 }
 
 void PrintAnalyzerView(void)
 {
-    printf("\033[1;1H[ ADAPTIVE ANALYZER VIEW ]\033[K");
-    printf("\033[2;1H--------------------------------------------------\033[K");
-    printf("\033[3;1H\033[2K");
-    // Live config
-    printf("\033[4;1H[ LIVE CONFIG ]\033[K");
-    printf("\033[5;1HThreshold:  %8.1f\033[K",  gesture_magnitude_threshold);
-    printf("\033[6;1HWindow:     %8lu ms\033[K", (unsigned long)gesture_detection_window_ms);
-    printf("\033[7;1HPeak Frac:  %8.2f\033[K",   gesture_peak_fraction);
-    printf("\033[8;1HBias X:     %8.1f\033[K",   gyro_bias_x);
-    printf("\033[9;1HBias Y:     %8.1f\033[K",   gyro_bias_y);
-    printf("\033[10;1H\033[2K");
-    printf("\033[11;1H[ GESTURE STATE ]\033[K");
-    printf("\033[12;1HState:  %-12s\033[K",       GestureDetector_StateToString(GestureDetector_GetState()));
-    printf("\033[13;1HPeak:   %8.1f\033[K",       GestureDetector_GetPeakMagnitude());
-    printf("\033[14;1H\033[2K");
-    printf("\033[15;1H[ ANALYZER OUTPUT ]\033[K");
-    printf("\033[16;1H--------------------------------------------------\033[K");
-    printf("\033[17;1H\033[K");  // blank line before output
+    printf("\033[1;1H[ ANALYZER ]\033[K");
+    printf("\033[2;1HThresh:%8.1f  Window:%lums  Frac:%.2f\033[K",
+        gesture_magnitude_threshold,
+        (unsigned long)gesture_detection_window_ms,
+        gesture_peak_fraction);
+    printf("\033[3;1HBias X:%8.1f  Bias Y:%8.1f\033[K", gyro_bias_x, gyro_bias_y);
+    printf("\033[5;1H[ GESTURE STATE ]\033[K");
+    printf("\033[6;1HState:%-12s  Peak:%8.1f\033[K",
+        GestureDetector_StateToString(GestureDetector_GetState()),
+        GestureDetector_GetPeakMagnitude());
+    printf("\033[8;1H[ ANALYZER OUTPUT ]\033[K");
+}
+
+void PrintLogView(void)
+{
+    static GestureLogEntry_t     g[3];
+    static AnalyzerChangeEntry_t a[3];
+
+    uint32_t gc = DataLogger_GetLastGestureEntries(g, 3);
+    uint32_t ac = DataLogger_GetLastAnalyzerEntries(a, 3);
+
+    printf("\033[1;1H[ CONFIG ]\033[K");
+    printf("\033[2;1HThresh:%.0f  Win:%lums  Frac:%.2f\033[K",
+        gesture_magnitude_threshold,
+        (unsigned long)gesture_detection_window_ms,
+        gesture_peak_fraction);
+
+    printf("\033[4;1H[ GESTURE LOG ]\033[K");
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (i < gc)
+            printf("\033[%d;1H%-10s  peak:%.0f  dur:%lums\033[K",
+                5 + i,
+                GestureDetector_Gesturetostring(g[i].gesture_result),
+                g[i].peak_magnitude,
+                (unsigned long)g[i].duration_ms);
+        else
+            printf("\033[%d;1H---\033[K", 5 + i);
+    }
+
+    printf("\033[9;1H[ ANALYZER CHANGES ]\033[K");
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (i < ac)
+            printf("\033[%d;1HT:%.0f->%.0f  W:%lu->%lu ms\033[K",
+                10 + i,
+                a[i].old_threshold, a[i].new_threshold,
+                (unsigned long)a[i].old_window_ms,
+                (unsigned long)a[i].new_window_ms);
+        else
+            printf("\033[%d;1H---\033[K", 10 + i);
+    }
 }
 
 /* USER CODE END 4 */

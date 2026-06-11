@@ -1,3 +1,4 @@
-../Core/Src/gyro_to_mouse.c:20:6:GyroMouse_Init	1
-../Core/Src/gyro_to_mouse.c:29:14:NormalizeMag	3
-../Core/Src/gyro_to_mouse.c:37:12:GyroMouse_Update	7
+../Core/Src/gyro_to_mouse.c:34:14:NormalizeMag	3
+../Core/Src/gyro_to_mouse.c:42:6:GyroMouse_Init	1
+../Core/Src/gyro_to_mouse.c:58:12:GyroMouse_Update	8
+../Core/Src/gyro_to_mouse.c:113:6:GyroMouse_GetSmoothedGyro	2
