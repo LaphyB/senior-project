@@ -1,6 +1,7 @@
 #include "adaptive_analyzer.h"
 
 #define ANALYZER_LOOKBACK  5
+#define MIN_WINDOW_MS  300
 
 void AdaptiveAnalyzer_Run(void)
 {
@@ -94,6 +95,20 @@ void AdaptiveAnalyzer_Run(void)
         if (new_window < gesture_detection_window_ms) new_window = gesture_detection_window_ms;
 
         printf("Win:%lu->%lu ms\r\n",
+            (unsigned long)gesture_detection_window_ms,
+            (unsigned long)new_window);
+        gesture_detection_window_ms = new_window;
+        changed = 1;
+    }
+    // ── Shrink window if gestures complete well under it ──────────
+    else if (success_rate > 0.8f && avg_duration_confirmed > 0 &&
+             avg_duration_confirmed < gesture_detection_window_ms * 0.5f &&
+             gesture_detection_window_ms > MIN_WINDOW_MS)
+    {
+        uint32_t new_window = (uint32_t)(avg_duration_confirmed * 2.0f);
+        if (new_window < MIN_WINDOW_MS) new_window = MIN_WINDOW_MS;
+
+        printf("Win:%lu->%lu ms (shrink)\r\n",
             (unsigned long)gesture_detection_window_ms,
             (unsigned long)new_window);
         gesture_detection_window_ms = new_window;
@@ -238,20 +253,27 @@ void AdaptiveAnalyzer_Run(void)
     }
 }
 
+#define BREAK_THRESHOLD   25000.0f
+#define BREAK_WINDOW_MS   5000
+#define BREAK_PEAK_FRAC   0.5f
+#define BREAK_COOLDOWN_MS 100
+#define BREAK_DEBOUNCE_MS 10
+#define BREAK_LPF_ALPHA   0.5f
+
 void AdaptiveAnalyzer_BreakConfig(void)
 {
-	printf("\033[10;1H");
-	printf("\033[J");
+    printf("\033[10;1H");
+    printf("\033[J");
     printf("[ BREAK CONFIG ]\r\n");
 
-    gesture_magnitude_threshold = 500.0f;
-    gesture_detection_window_ms = 200;
-    gesture_peak_fraction       = 0.5f;
-    gesture_cooldown_ms         = 100;
-    gesture_debounce_ms         = 10;
-    gyro_lpf_alpha              = 0.5f;
+    gesture_magnitude_threshold = BREAK_THRESHOLD;
+    gesture_detection_window_ms = BREAK_WINDOW_MS;
+    gesture_peak_fraction        = BREAK_PEAK_FRAC;
+    gesture_cooldown_ms          = BREAK_COOLDOWN_MS;
+    gesture_debounce_ms          = BREAK_DEBOUNCE_MS;
+    gyro_lpf_alpha                = BREAK_LPF_ALPHA;
 
-    printf("Thresh:500  Win:200ms  Frac:0.5\r\n");
-    printf("Cool:100ms  Deb:10ms  LPF:0.5\r\n");
+    printf("Thresh:%.0f  Win:%dms  Frac:%.2f\r\n", BREAK_THRESHOLD, BREAK_WINDOW_MS, BREAK_PEAK_FRAC);
+    printf("Cool:%dms  Deb:%dms  LPF:%.2f\r\n", BREAK_COOLDOWN_MS, BREAK_DEBOUNCE_MS, BREAK_LPF_ALPHA);
     printf("Run analyzer to fix\r\n");
 }

@@ -14,6 +14,7 @@
 // ============================================================================
 
 static GestureState_t g_state;
+//static GestureState_t prev_state;	// For Testing
 static uint32_t       g_state_start_ms;
 static uint32_t       g_gesture_end_ms;
 static uint32_t       g_detect_start_ms;
@@ -139,6 +140,8 @@ GestureType_t GestureDetector_Update(SensorData_t *data)
     float gyro_z      = data->gyro_z;
     uint32_t timestamp_ms = data->timestamp_ms;
 
+    //prev_state = g_state;
+
     g_last_accel_x = data->accel_x;
     g_last_accel_y = data->accel_y;
     g_last_accel_z = data->accel_z;
@@ -230,7 +233,10 @@ GestureType_t GestureDetector_Update(SensorData_t *data)
             if (magnitude < (gesture_magnitude_threshold * gesture_peak_fraction))
             {
                 if (g_peak_magnitude >= gesture_magnitude_threshold)
+                {
                     result = DetermineGestureFromPeak();
+                    LogGestureEvent(LOG_EVENT_GESTURE_CONFIRMED, result, timestamp_ms);
+                }
 
                 g_gesture_end_ms = timestamp_ms;
                 g_state = STATE_DEBOUNCE;
@@ -281,6 +287,19 @@ GestureType_t GestureDetector_Update(SensorData_t *data)
             break;
         }
     }
+    /*if (g_state != prev_state && g_state != STATE_IDLE)
+	{
+		printf("[%lu] %s -> %s  mag=%.0f thresh=%.0f\r\n",
+			(unsigned long)timestamp_ms,
+			GestureDetector_StateToString(prev_state),
+			GestureDetector_StateToString(g_state),
+			magnitude,
+			gesture_magnitude_threshold);
+		if (result != GESTURE_NONE)
+		{
+			printf("%s \r\n", GestureDetector_Gesturetostring(result));
+		}
+	}*/
 
     return result;
 }

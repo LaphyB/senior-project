@@ -167,7 +167,7 @@ int main(void)
     Config_Init();
     printf("Initial Configs Loaded!\r\n");
 
-    printf("Calibrating ADC...\r\n");
+    printf("\r\nCalibrating ADC...\r\n");
     if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
     {
         printf("ADC Calibration failed!\r\n");
@@ -183,6 +183,37 @@ int main(void)
     }
     printf("DMA started successfully!\r\n");
 
+    /*
+    HAL_Delay(100);
+
+    int32_t sum_js1_x = 0, sum_js1_y = 0, sum_js2_x = 0, sum_js2_y = 0;
+    uint32_t sample_count = 0;
+
+    uint32_t start_time = HAL_GetTick();
+    while (HAL_GetTick() - start_time < 1000)
+    {
+        sum_js1_x += adc_results[0];
+        sum_js1_y += adc_results[1];
+        sum_js2_x += adc_results[2];
+        sum_js2_y += adc_results[3];
+        sample_count++;
+        HAL_Delay(10);
+    }
+
+    if (sample_count > 0)
+    {
+        float avg_js1_x = (float)sum_js1_x / sample_count;
+        float avg_js1_y = (float)sum_js1_y / sample_count;
+        float avg_js2_x = (float)sum_js2_x / sample_count;
+        float avg_js2_y = (float)sum_js2_y / sample_count;
+
+        printf("--- Joystick Neutral Position (avg over %lu samples) ---\r\n", (unsigned long)sample_count);
+        printf("JS1 X:%6.1f Y:%6.1f\r\n", avg_js1_x, avg_js1_y);
+        printf("JS2 X:%6.1f Y:%6.1f\r\n", avg_js2_x, avg_js2_y);
+
+    }
+    printf("\r\n");*/
+
     printf("Initializing ICM-20948...\r\n");
     if (ICM20948_Init(&hi2c1) != HAL_OK)
     {
@@ -190,12 +221,83 @@ int main(void)
     }
     printf("ICM-20948 initialized successfully!\r\n");
 
+    // Test 1.1 - WHO_AM_I check
+    uint8_t who_am_i;
+    if (ICM20948_WhoAmI(&hi2c1, &who_am_i) == HAL_OK)
+    {
+        printf("WHO_AM_I = 0x%02X (expected 0xEA) -> %s\r\n",
+            who_am_i, (who_am_i == 0xEA) ? "PASS" : "FAIL");
+    }
+    else
+    {
+        printf("WHO_AM_I read failed -> FAIL\r\n");
+    }
+
     printf("Initializing magnetometer...\r\n");
     if (ICM20948_InitMagnetometer(&hi2c1) != HAL_OK)
     {
         printf("Magnetometer initialization failed!\r\n");
     }
     printf("Magnetometer ready!\r\n");
+
+    /* Test 1.2/1.3/1.4 - Average sensor values at rest over 5 seconds
+    printf("--- Averaging Sensor Values at Rest (5s) ---\r\n");
+
+    int32_t sum_gyro_x = 0, sum_gyro_y = 0, sum_gyro_z = 0;
+    int32_t sum_accel_x = 0, sum_accel_y = 0, sum_accel_z = 0;
+    float   sum_mag_x = 0, sum_mag_y = 0, sum_mag_z = 0;
+    uint32_t sample_count = 0;
+
+    ICM20948_Data_t test_data;
+    MagData_t       test_mag;
+
+    uint32_t start_time = HAL_GetTick();
+    while (HAL_GetTick() - start_time < 5000)
+    {
+        if (ICM20948_ReadAll(&hi2c1, &test_data) == HAL_OK)
+        {
+            sum_gyro_x  += test_data.gyro_x;
+            sum_gyro_y  += test_data.gyro_y;
+            sum_gyro_z  += test_data.gyro_z;
+            sum_accel_x += test_data.accel_x;
+            sum_accel_y += test_data.accel_y;
+            sum_accel_z += test_data.accel_z;
+
+            if (ICM20948_ReadMagnetometer(&hi2c1, &test_mag) == HAL_OK)
+            {
+                sum_mag_x += test_mag.x_ut;
+                sum_mag_y += test_mag.y_ut;
+                sum_mag_z += test_mag.z_ut;
+            }
+
+            sample_count++;
+        }
+        HAL_Delay(10);
+    }
+
+    if (sample_count > 0)
+    {
+        printf("Samples: %lu\r\n", (unsigned long)sample_count);
+        printf("Gyro  AVG X:%6.1f Y:%6.1f Z:%6.1f\r\n",
+            (float)sum_gyro_x / sample_count,
+            (float)sum_gyro_y / sample_count,
+            (float)sum_gyro_z / sample_count);
+        printf("Accel AVG X:%6.1f Y:%6.1f Z:%6.1f\r\n",
+            (float)sum_accel_x / sample_count,
+            (float)sum_accel_y / sample_count,
+            (float)sum_accel_z / sample_count);
+        printf("Mag   AVG X:%7.2f Y:%7.2f Z:%7.2f uT\r\n",
+            sum_mag_x / sample_count,
+            sum_mag_y / sample_count,
+            sum_mag_z / sample_count);
+    }
+    else
+    {
+        printf("No samples collected\r\n");
+    }
+    printf("\r\n");*/
+
+
 
     printf("Initializing SDCard Reader and Data Logger...\r\n");
     DataLogger_Init(&USERFatFs, &USERFile, USERPath);
@@ -349,6 +451,7 @@ int main(void)
 			accum_x -= report_x;
 			accum_y -= report_y;
 
+			//printf("Sending HID Report: X = %f, Y = %f\r\n", accum_x, accum_y);
 			HIDSAPP_SendMouseReport(report_x, report_y, 0);
 		}
 
